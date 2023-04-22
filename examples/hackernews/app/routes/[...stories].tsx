@@ -8,6 +8,7 @@ export const config = {
 	validateSearch: (searchParams) => {
 		return { page: searchParams.page as number };
 	},
+	
 } satisfies PageConfig;
 
 const mapStories: Record<string, string> = {
@@ -24,7 +25,6 @@ export default async function Stories({ searchParams, params }: PageProps) {
 	let page = +searchParams.page || 1;
 	let stories = await fetchAPI<IStory[]>(`${mapStories[type]}?page=${page}`);
 
-	// const { page, type, stories } = await ;
 	return (
 		<div className="news-view">
 			<div className="news-list-nav">

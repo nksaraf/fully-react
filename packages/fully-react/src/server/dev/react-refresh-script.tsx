@@ -9,6 +9,7 @@ export const ReactRefreshScript = import.meta.env.DEV
 			return (
 				<script
 					type="module"
+					async
 					dangerouslySetInnerHTML={{
 						__html: `
           import RefreshRuntime from "/@react-refresh"

@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-import { ConfigRoute, RouteManifest } from "./types";
+import { ConfigPageRoute, ConfigRoute, RouteManifest } from "./types";
 
 import { minimatch } from "minimatch";
 
@@ -23,7 +23,7 @@ export interface DefineRouteOptions {
 	 */
 	id?: string;
 
-	routeHandler?: boolean;
+	type?: "route" | "page";
 }
 
 interface DefineRouteChildren {
@@ -81,7 +81,7 @@ export function defineRoutes(
 	callback: (defineRoute: DefineRouteFunction) => void,
 ): RouteManifest {
 	const routes: RouteManifest = Object.create(null);
-	const parentRoutes: ConfigRoute[] = [];
+	const parentRoutes: (ConfigRoute | ConfigPageRoute)[] = [];
 	let alreadyReturned = false;
 
 	const defineRoute: DefineRouteFunction = (
@@ -110,18 +110,27 @@ export function defineRoutes(
 			options = optionsOrChildren || {};
 		}
 
-		const route: ConfigRoute = {
-			path: path ? path : undefined,
-			index: options.index ? true : undefined,
-			caseSensitive: options.caseSensitive ? true : undefined,
-			id: id ?? createRouteId(file),
-			parentId:
-				parentRoutes.length > 0
-					? parentRoutes[parentRoutes.length - 1].id
-					: "root",
-			routeHandler: options.routeHandler ? true : undefined,
-			file,
-		};
+		const route: ConfigRoute | ConfigPageRoute =
+			options.type === "route"
+				? {
+						path: path!,
+						type: "route",
+						id: id ?? createRouteId(file),
+						file,
+						parentId: "route-handler",
+				  }
+				: {
+						path: path ? path : undefined,
+						index: options.index ? true : undefined,
+						caseSensitive: options.caseSensitive ? true : undefined,
+						id: id ?? createRouteId(file),
+						parentId:
+							parentRoutes.length > 0
+								? parentRoutes[parentRoutes.length - 1].id
+								: "root",
+						type: "page",
+						file,
+				  };
 
 		if (route.id in routes) {
 			throw new Error(
@@ -217,14 +226,13 @@ export function toPath(id: string, removePathlessLayouts = true) {
  * with a path of `gists/:username`.
  */
 export function defineFileSystemRoutes(
-	appDir: string,
+	routesDir: string,
 	ignoredFilePatterns: string[] = ["**/*.css"],
 ): RouteManifest {
 	const files: { [routeId: string]: string } = {};
 
-	const routesDir = path.join(appDir, "routes");
 	// First, find all route modules in app/routes
-	visitFiles(path.join(appDir, "routes"), (file) => {
+	visitFiles(routesDir, (file) => {
 		if (
 			ignoredFilePatterns &&
 			ignoredFilePatterns.some((pattern) => minimatch(file, pattern))
@@ -294,7 +302,7 @@ export function defineFileSystemRoutes(
 
 				defineRoute(routePath, files[routeId], routeId, {
 					index: true,
-					routeHandler: isRouteHandler,
+					type: isRouteHandler ? "route" : "page",
 				});
 			} else {
 				defineRoute(routePath, files[routeId], routeId, () => {

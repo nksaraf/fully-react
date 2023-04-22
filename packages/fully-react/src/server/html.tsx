@@ -4,9 +4,10 @@ import {
 	createFromReadableStream as createElementFromStream,
 } from "react-server-dom-webpack/client.edge";
 
-import type { Env } from "../env";
+import type { Env } from "./env";
+import { ReactRefreshScript } from "./dev";
 import { renderToReadableStream as _renderToHTMLStream } from "react-dom/server.edge";
-import { renderServerComponent } from "./server-components";
+import { renderServerComponent } from "../react-server/render";
 import { sanitize } from "./htmlescape";
 
 export type FlightResponseRef = {
@@ -209,10 +210,13 @@ export async function createHTMLResponse(
 				},
 			},
 		);
-	} catch (e) {
+	} catch (e: unknown) {
 		const htmlStream = await _renderToHTMLStream(
 			<html id="__error__">
-				<head></head>
+				<head>
+					<meta name="error-message" content={(e as Error).message} />
+					<ReactRefreshScript />
+				</head>
 				<body></body>
 			</html>,
 			renderOptions,

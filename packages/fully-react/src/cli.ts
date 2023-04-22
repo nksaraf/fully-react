@@ -1,12 +1,12 @@
+import { Manifest, resolveConfig } from "vite";
 import { cpSync, existsSync, readFileSync, writeFileSync } from "fs";
 import { join, relative } from "path";
-import { removeDir, writeJson } from "./fs";
+import { removeDir, writeJson } from "./build/fs";
 
-import { Manifest } from "vite";
 import { RouteManifest } from "./fs-router/types";
-import { copyDependenciesToFunction } from "./nft";
+import { copyDependenciesToFunction } from "./build/vercel/nft";
 import { defineFileSystemRoutes } from "./fs-router";
-import { getRedirects } from "./redirects";
+import { getRedirects } from "./build/vercel/redirects";
 import { pathToFileURL } from "url";
 
 async function adapt() {
@@ -132,12 +132,15 @@ function getRuntime() {
 }
 
 async function generate() {
+	const config = await resolveConfig({}, "build");
+	console.log(config);
 	const handlerPath = join(process.cwd(), "/dist/server/handler.js");
 	const staticOutDir = join(process.cwd(), "/dist/static");
 	const { default: handler } = await import(handlerPath);
 
 	let routes: RouteManifest = {
 		"/": {
+			type: "page",
 			file: join(process.cwd(), "app", "root.tsx"),
 			id: "/",
 			path: "/",

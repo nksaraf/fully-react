@@ -17,8 +17,6 @@ interface HattipOptions {
 }
 
 export function hattip(options: HattipOptions): PluginOption {
-	const hasClient = !!(options.clientConfig || options.clientEntries);
-
 	return [
 		exposeDevServer(),
 		injectConfig(options),

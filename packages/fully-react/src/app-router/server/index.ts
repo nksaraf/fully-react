@@ -1,2 +1,2 @@
 export * from "./create-router";
-export type { PageProps } from "../../types";
+export type { PageProps } from "../types";

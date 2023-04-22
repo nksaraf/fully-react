@@ -1,13 +1,11 @@
 import { Router, createRouter } from "@hattip/router";
-import {
-	createActionResponse,
-	createServerComponentResponse,
-	decodeServerFunctionArgs,
-} from "./streams";
 import { getURLFromRedirectError, isRedirectError } from "../shared/redirect";
 
-import { Env } from "../env";
+import { Env } from "./env";
+import { createActionResponse } from "./action";
 import { createHTMLResponse } from "./html";
+import { createServerComponentResponse } from "./server-components";
+import { decodeServerFunctionArgs } from "../react-server/stream";
 import { requestAsyncContext } from "./async-context";
 
 export async function handleActionRequest(request: Request, env: Env) {
@@ -165,20 +163,20 @@ export async function handleServerComponentRequest(request: Request, env: Env) {
 export function createServerRouter(env: Env): Router {
 	const router = createRouter();
 
-	Object.entries(env.routesConfig).forEach(([entry, route]) => {
-		if (route.routeHandler) {
+	Object.entries(env.manifests.routesManifest).forEach(([entry, route]) => {
+		if (route.type === "route") {
 			router.get(route.path, async (context) => {
 				const mod = await env.loadModule(route.file);
 
 				const handler = mod[context.request.method];
-				return await handler(context.request);
+				return await handler(context.request, context.params);
 			});
 
 			router.post(route.path, async (context) => {
 				const mod = await env.loadModule(route.file);
 
 				const handler = mod[context.request.method];
-				return await handler(context.request);
+				return await handler(context.request, context.params);
 			});
 		}
 	});

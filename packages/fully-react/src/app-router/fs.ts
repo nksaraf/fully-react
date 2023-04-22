@@ -1,6 +1,6 @@
+import { createNestedPageRoutes } from "../fs-router/nested";
 import { createRouter } from "./server/create-router";
-import { createServerRoutes } from "../fs-router/server-routes";
 
-const routes = createServerRoutes(globalThis.env, "root");
+const routes = createNestedPageRoutes(globalThis.env, "root");
 
 export default createRouter(routes);

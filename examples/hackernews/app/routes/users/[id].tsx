@@ -1,5 +1,5 @@
-import fetchAPI from "~/api";
 import { PageProps } from "./[id].types";
+import fetchAPI from "~/api";
 
 export default async function UserPage({ params }: PageProps) {
 	let user = await fetchAPI<IUser>(`user/${params.id}`);

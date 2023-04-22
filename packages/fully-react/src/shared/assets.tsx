@@ -1,6 +1,5 @@
-import { Env } from "../env";
+import { Env } from "../server/env";
 import { ReactRefreshScript } from "../server/dev/react-refresh-script";
-import { component } from "../server/component";
 
 type AssetDesc = string | { type: "style"; style: string; src?: string };
 
@@ -66,7 +65,7 @@ export const Style = ({ style, src }: { style: string; src?: string }) => {
 	);
 };
 
-export const Assets = component(async function Assets({
+export async function Assets({
 	assets = [],
 }: {
 	assets?: AssetDesc[];
@@ -91,4 +90,4 @@ export const Assets = component(async function Assets({
 		);
 	}
 	return null;
-});
+}

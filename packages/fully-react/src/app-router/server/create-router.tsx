@@ -11,7 +11,7 @@ import { createLocation, createPath } from "../../fs-router/path";
 
 import { Assets } from "../../shared/assets";
 import { NotFoundBoundary } from "../client/NotFoundBoundary";
-import { PageProps } from "../../types";
+import { PageProps } from "../types";
 import { StatusCode } from "./StatusCode";
 
 function renderMatches(

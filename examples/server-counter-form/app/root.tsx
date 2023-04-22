@@ -15,7 +15,7 @@ async function Counter() {
 	);
 }
 
-export default async function Root() {
+export default function Root() {
 	return (
 		<html lang="en">
 			<head>

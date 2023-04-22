@@ -10,13 +10,6 @@ export default defineConfig([
 		dts: true,
 	},
 	{
-		entry: ["./src/fs-router.ts"],
-		format: ["esm"],
-		platform: "node",
-		target: "node14",
-		dts: true,
-	},
-	{
 		entry: ["./src/cli.ts"],
 		format: ["cjs"],
 		platform: "node",
@@ -72,7 +65,7 @@ export default defineConfig([
 		target: "esnext",
 		shims: false,
 		external: ["/virtual:vavite-connect-handler"],
-		noExternal: ["sirv"],
+		noExternal: ["sirv", "@hattip/adapter-node"],
 	},
 	{
 		entry: ["./src/server/*", "./src/shared/*", "./src/entry-server.ts"],
@@ -86,7 +79,7 @@ export default defineConfig([
 	},
 	{
 		entry: {
-			"entry-rsc.development": "./src/entry-rsc.tsx",
+			"entry-rsc.development": "./src/react-server/entry.tsx",
 		},
 		env: {
 			NODE_ENV: "development",
@@ -97,11 +90,11 @@ export default defineConfig([
 		target: "esnext",
 		treeshake: true,
 		shims: false,
-		external: ["fully-react", "virtual:vite-dev-server"],
+		external: ["fully-react"],
 	},
 	{
 		entry: {
-			"entry-rsc.production": "./src/entry-rsc.tsx",
+			"entry-rsc.production": "./src/react-server/entry.tsx",
 		},
 		env: {
 			NODE_ENV: "production",
@@ -117,7 +110,7 @@ export default defineConfig([
 	},
 	{
 		entry: {
-			"rsc-worker": "./src/rsc-worker.ts",
+			"rsc-worker": "./src/react-server/node-worker.ts",
 		},
 		dts: false,
 		format: ["esm"],

@@ -1,4 +1,6 @@
-import type { ModuleMap } from "react-server-dom-webpack/server.edge";
+import * as logger from "../logger";
+
+import { ModuleMap } from "./env";
 
 function dynamicImport(chunk: string) {
 	return import(/* @vite-ignore */ chunk);
@@ -22,12 +24,12 @@ export function setupWebpackEnv(
 	globalEnv.moduleCache = globalEnv.moduleCache ?? new Map<string, any>();
 
 	globalEnv.__webpack_chunk_load__ = async (chunk: string) => {
-		console.log("Loading chunk", chunk);
+		logger.debug("Loading chunk", chunk);
 		globalEnv.moduleCache.set(chunk, await load(chunk));
 	};
 
 	globalEnv.__webpack_require__ = (id: string) => {
-		console.log("Requiring chunk", id);
+		logger.debug("Requiring chunk", id);
 		if (!globalEnv.moduleCache.has(id))
 			throw new Error(`Module ${id} not found`);
 		return globalEnv.moduleCache.get(id);
