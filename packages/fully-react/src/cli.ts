@@ -1,13 +1,16 @@
 import { Manifest, resolveConfig } from "vite";
-import { cpSync, existsSync, readFileSync, writeFileSync } from "fs";
-import { join, relative } from "path";
+import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join, relative } from "node:path";
 import { removeDir, writeJson } from "./build/fs";
 
 import { RouteManifest } from "./fs-router/types";
 import { copyDependenciesToFunction } from "./build/vercel/nft";
 import { defineFileSystemRoutes } from "./fs-router";
+import { execa } from "execa";
 import { getRedirects } from "./build/vercel/redirects";
-import { pathToFileURL } from "url";
+import { pathToFileURL } from "node:url";
+import sade from "sade";
+import supportsColor from "supports-color";
 
 async function adapt() {
 	const buildTempFolder = pathToFileURL(process.cwd() + "/");
@@ -187,4 +190,21 @@ async function generate() {
 	}
 }
 
-generate();
+// generate();
+
+const react = sade("react-server");
+
+react
+	.command("dev")
+	.describe("Start the development server")
+	.action(async () => {
+		console.log("Starting development server...");
+
+		execa("vite", ["dev"], {
+			stdio: "inherit",
+			shell: true,
+			env: { ...process.env, FORCE_COLOR: "true" },
+		});
+	});
+
+react.parse(process.argv);

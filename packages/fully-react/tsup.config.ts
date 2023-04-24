@@ -11,7 +11,7 @@ export default defineConfig([
 	},
 	{
 		entry: ["./src/cli.ts"],
-		format: ["cjs"],
+		format: ["esm"],
 		platform: "node",
 		target: "node14",
 		external: ["@vercel/nft"],

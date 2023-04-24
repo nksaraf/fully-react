@@ -1,13 +1,10 @@
-import { createLogger, type Plugin, type PluginOption } from "vite";
+import { type Plugin, type PluginOption } from "vite";
 import inspect from "vite-plugin-inspect";
 import tsconfigPaths from "vite-tsconfig-paths";
 import reactRefresh from "@vitejs/plugin-react";
-import { reactServerComponents } from "./dev-server/plugins/rsc";
+import { reactServerComponents } from "./dev-server/server-components";
 import { hattip } from "./winterkit/vite-plugin";
-
-import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { exposeDevServer } from "./dev-server/plugins/vite-dev-server";
+import { exposeDevServer } from "./dev-server/vite-dev-server";
 
 function makeDefaultNodeEntry(hattipEntry: string | undefined) {
 	if (!hattipEntry) {
@@ -22,7 +19,7 @@ function makeDefaultNodeEntry(hattipEntry: string | undefined) {
 }
 
 import { createRequire } from "node:module";
-import { fullyReactBuild } from "./build";
+import { fullyReactBuild } from "./dev-server/fully-react";
 
 export const require = createRequire(import.meta.url);
 

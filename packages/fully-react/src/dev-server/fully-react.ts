@@ -1,11 +1,11 @@
 import { createLogger, ViteDevServer, type Plugin } from "vite";
 import path, { dirname, join } from "node:path";
 import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
-import { defineFileSystemRoutes } from "./fs-router";
-import { generateTypes, prettyPrintRoutes } from "./fs-router/dev";
-import { createNestedPageRoutes } from "./fs-router/nested";
-import { Env, RouteManifest } from "./server/env";
-import { createRSCWorker as createReactServerWorker } from "./react-server/node-worker-client";
+import { defineFileSystemRoutes } from "../fs-router";
+import { generateTypes, prettyPrintRoutes } from "../fs-router/dev";
+import { createNestedPageRoutes } from "../fs-router/nested";
+import { Env, RouteManifest } from "../server/env";
+import { createRSCWorker as createReactServerWorker } from "../react-server/node-worker-client";
 import invariant from "tiny-invariant";
 import { fileURLToPath } from "node:url";
 
