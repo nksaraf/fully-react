@@ -17,6 +17,19 @@ export function reactServerComponents(): Plugin {
 
 		enforce: "pre",
 
+		config() {
+			if (process.env.RSC_WORKER) {
+				return {
+					serverComponents: {
+						serverModules,
+						clientModules,
+					},
+				} as any;
+			}
+
+			return {};
+		},
+
 		configResolved(config) {
 			root = config.root;
 			isBuild = config.command === "build";

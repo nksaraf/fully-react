@@ -130,6 +130,14 @@ function getManifests() {
 		path.join(buildAppRoot, "dist", "server", "static-manifest.json"),
 	);
 
+	const clientSSRManifest: any = readJSON(
+		path.join(buildAppRoot, "dist", "static", "ssr-manifest.json"),
+	);
+
+	const clientDepsManifest: BuildManifest = readJSON(
+		path.join(buildAppRoot, "dist", "react-server", "client-deps.json"),
+	);
+
 	const serverManifest: BuildManifest = readJSON(
 		path.join(buildAppRoot, "dist", "server", "manifest.json"),
 	);
@@ -146,8 +154,10 @@ function getManifests() {
 		buildAppRoot,
 		srcAppRoot,
 		clientManifest,
+		clientSSRManifest,
 		serverManifest,
 		reactServerManifest,
+		clientDepsManifest,
 		routesManifest,
 		findInServerManifest(chunk: string) {
 			const file = serverManifest[relative(srcAppRoot, chunk)];
@@ -197,9 +207,12 @@ const createProdEnv = (): Env => {
 		bootstrapScriptContent: `window.manifest = ${JSON.stringify({
 			root: process.cwd(),
 			client: Object.fromEntries(
-				Object.entries(manifests.clientManifest)
-					.filter(([key, asset]) => asset.file)
-					.map(([key, asset]) => [key, asset.file]),
+				Object.entries(manifests.clientDepsManifest).map(([key, asset]) => [
+					key,
+					manifests.clientSSRManifest[
+						relative(import.meta.env.ROOT_DIR, key)
+					][0],
+				]),
 			),
 		})};`,
 		bootstrapModules: [

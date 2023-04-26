@@ -1,4 +1,4 @@
-import { createLogger, ViteDevServer, type Plugin } from "vite";
+import { createLogger, ViteDevServer, type Plugin, ResolvedConfig } from "vite";
 import path, { dirname, join } from "node:path";
 import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { defineFileSystemRoutes } from "../fs-router";
@@ -34,6 +34,10 @@ export function fullyReactBuild({
 	clientEntry?: string | null;
 	rscEntry?: string | null;
 }) {
+	let _serverModules: Set<string>;
+	let _clientModules: Set<string>;
+	let _clientModuleManifest: Map<string, string[]>;
+
 	const reactEnv = {
 		isClientBuild: false,
 		isAppServerBuild: false,
@@ -75,7 +79,38 @@ export function fullyReactBuild({
 		get absoluteAppRootEntry() {
 			return join(this.absoluteAppRoot, this.appRootEntry);
 		},
+		get clientModuleIds() {
+			return Array.from(this.clientModules.values());
+		},
+		clientModuleForServer(src: string) {
+			if (this.isClientBuild) {
+				if (!_clientModuleManifest) {
+					if (
+						existsSync(join(this.absoluteReactServerOutDir, "client-deps.json"))
+					) {
+						_clientModuleManifest = new Map(
+							Object.entries(
+								JSON.parse(
+									readFileSync(
+										join(this.absoluteReactServerOutDir, "client-deps.json"),
+										{
+											encoding: "utf8",
+										},
+									),
+								),
+							),
+						);
+					}
+				}
+				return Array.from(_clientModuleManifest.entries())
+					.filter(([k, v]) => v.includes(src))
+					.map(([k, v]) => k);
+			}
+		},
 		get clientModules() {
+			if (_clientModules) {
+				return _clientModules;
+			}
 			let clientModules: string[] = [];
 			if (
 				existsSync(join(this.absoluteReactServerOutDir, "client-manifest.json"))
@@ -90,9 +125,15 @@ export function fullyReactBuild({
 				);
 			}
 
-			return clientModules;
+			_clientModules = new Set(clientModules);
+
+			return _clientModules;
 		},
 		get serverModules() {
+			if (_serverModules) {
+				return _serverModules;
+			}
+
 			let serverModules: string[] = [];
 			if (
 				existsSync(join(this.absoluteReactServerOutDir, "server-manifest.json"))
@@ -107,10 +148,13 @@ export function fullyReactBuild({
 				);
 			}
 
-			return serverModules;
+			_serverModules = new Set(serverModules);
+
+			return _serverModules;
 		},
 	};
 
+	let viteConfig: ResolvedConfig;
 	let reactServerWorker: Awaited<ReturnType<typeof createReactServerWorker>>;
 	return {
 		name: "fully-react",
@@ -137,6 +181,13 @@ export function fullyReactBuild({
 				reactServerWorker.close();
 			}
 		},
+		configResolved(config: any) {
+			viteConfig = config;
+			if (reactEnv.isReactServerBuild) {
+				_serverModules = config.serverComponents.serverModules;
+				_clientModules = config.serverComponents.clientModules;
+			}
+		},
 		config(config, env) {
 			reactEnv.root = config.root ?? process.cwd();
 			reactEnv.isReactServerWorker = Boolean(process.env.RSC_WORKER?.length);
@@ -154,7 +205,7 @@ export function fullyReactBuild({
 
 			reactEnv.routesDir = "routes";
 			reactEnv.appRoot = "app";
-			reactEnv.appRootEntry = "root";
+			reactEnv.appRootEntry = "root.tsx";
 			reactEnv.typescriptAppRoot = ".vite/app";
 			reactEnv.fullyReactPkgDir = join(_dirname, "..");
 
@@ -190,7 +241,6 @@ export function fullyReactBuild({
 
 				config.build.manifest = true;
 
-				console.log(reactEnv.absoluteAppRootEntry);
 				config.build.rollupOptions.input["react-server"] =
 					reactEnv.reactServerEntry;
 				config.build.rollupOptions.input["root"] =
@@ -211,7 +261,40 @@ export function fullyReactBuild({
 
 				config.build.outDir ||= reactEnv.reactServerOutDir;
 				config.build.ssrEmitAssets = true;
-				console.log(config.build.rollupOptions);
+				_clientModuleManifest = new Map();
+				config.build.rollupOptions.output = {
+					manualChunks: function (id, { getModuleInfo }) {
+						if (reactEnv.clientModules.has(id)) {
+							const dependentEntryPoints = [];
+
+							// we use a Set here so we handle each module at most once. This
+							// prevents infinite loops in case of circular dependencies
+							const idsToHandle = new Set(getModuleInfo(id)!.importers);
+
+							for (const moduleId of idsToHandle) {
+								const { isEntry, dynamicImporters, importers } =
+									getModuleInfo(moduleId)!;
+								if (
+									isEntry ||
+									importers.length > 0 ||
+									dynamicImporters.length > 0
+								)
+									dependentEntryPoints.push(moduleId);
+
+								// The Set iterator is intelligent enough to iterate over
+								// elements that are added during iteration
+								for (const importerId of importers) idsToHandle.add(importerId);
+								for (const importerId of dynamicImporters)
+									idsToHandle.add(importerId);
+							}
+
+							_clientModuleManifest.set(
+								id,
+								Array.from(dependentEntryPoints.values()),
+							);
+						}
+					},
+				};
 			} else if (reactEnv.isAppServerBuild) {
 				if (config.build.ssr === true) {
 					config.build.rollupOptions ||= {};
@@ -227,10 +310,30 @@ export function fullyReactBuild({
 				config.build.outDir ||= reactEnv.clientOutDir;
 				config.build.ssrManifest = true;
 				config.build.rollupOptions ||= {};
-				config.build.rollupOptions.treeshake = false;
+				config.build.rollupOptions.treeshake = true;
 				config.build.rollupOptions.preserveEntrySignatures = "exports-only";
-				config.build.rollupOptions.input ||= [reactEnv.clientEntry];
+				// config.build.rollupOptions.input ||= [reactEnv.clientEntry];
 				config.build.manifest = true;
+
+				// TODO: figure out how to make this work
+				// config.build.rollupOptions.treeshake = true;
+				config.build.rollupOptions.preserveEntrySignatures = "exports-only";
+				config.build.rollupOptions.input ||= [];
+				// config.build.manifest = true;
+				config.build.rollupOptions.output ||= {};
+				if (!Array.isArray(config.build.rollupOptions.output)) {
+					config.build.minify = false;
+					// config.build.rollupOptions.output.inlineDynamicImports = false;
+					config.build.rollupOptions.output.manualChunks = {
+						react: [
+							"react",
+							"react-dom",
+							"react/jsx-runtime",
+							"react-server-dom-webpack/client.browser",
+						],
+					};
+					config.build.rollupOptions.output.inlineDynamicImports = false;
+				}
 			}
 
 			return {
@@ -268,8 +371,14 @@ export function fullyReactBuild({
 				options.input = {
 					...options.input,
 					...Object.fromEntries([
-						...reactEnv.clientModules.map((m) => [path.basename(m), m]),
-						...reactEnv.serverModules.map((m) => [path.basename(m), m]),
+						...[...reactEnv.clientModules.values()].map((m) => [
+							path.basename(m),
+							m,
+						]),
+						...[...reactEnv.serverModules.values()].map((m) => [
+							path.basename(m),
+							m,
+						]),
 					]),
 				};
 			} else if (reactEnv.isClientBuild) {
@@ -277,7 +386,46 @@ export function fullyReactBuild({
 					Array.isArray(options.input),
 					"options.input must be an array",
 				);
-				options.input.push(...reactEnv.clientModules);
+				// options.input.push(...reactEnv.clientModules);
+				options.input.push("react:routes");
+			}
+		},
+		resolveId(id) {
+			if (id === "react:routes") {
+				return id;
+			} else if (id.startsWith("react:route")) {
+				return id;
+			}
+		},
+		load(id) {
+			if (id === "react:routes") {
+				return `
+					let mount = () => import('${reactEnv.clientEntry}'); console.log(mount);
+					${reactEnv
+						.clientModuleForServer(reactEnv.absoluteAppRootEntry)!
+						.map(
+							(mod, index) =>
+								`let clientComponent${index} =  () => import('${mod}'); console.log(clientComponent${index})`,
+						)
+						.join(";")}
+					${Object.entries(reactEnv.routesManifest)
+						.map(
+							([k, v], index) =>
+								`let route${index} = () => import('${v.file}?route'); console.log(route${index})`,
+						)
+						.join(";")}
+				`;
+			} else if (id.endsWith("?route")) {
+				console.log(id.replace("?route", ""));
+				console.log(reactEnv.clientModuleForServer(id.replace("?route", "")));
+				return `
+					${reactEnv
+						.clientModuleForServer(id.replace("?route", ""))!
+						.map(
+							(mod, index) =>
+								`let x${index} =  () => import('${mod}'); console.log(x${index})`,
+						)
+						.join(";")}`;
 			}
 		},
 		async buildEnd() {
@@ -303,6 +451,14 @@ export function fullyReactBuild({
 				writeFileSync(
 					join(reactEnv.absoluteReactServerOutDir, "routes.json"),
 					JSON.stringify(reactEnv.routesManifest, null, 2),
+				);
+				writeFileSync(
+					join(reactEnv.absoluteReactServerOutDir, "client-deps.json"),
+					JSON.stringify(
+						Object.fromEntries(_clientModuleManifest.entries()),
+						null,
+						2,
+					),
 				);
 			} else if (reactEnv.isAppServerBuild) {
 				logger.info("copying react server to inside app server");

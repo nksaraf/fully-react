@@ -34,9 +34,11 @@ function pathRelative(from: string, to: string) {
 
 export function loadModule(id: string) {
 	if (import.meta.env.PROD) {
-		const assetPath =
-			`/` +
-			globalThis.manifest.client[pathRelative(import.meta.env.ROOT_DIR, id)];
+		const assetPath: string = globalThis.manifest.client[id];
+
+		if (!assetPath) {
+			throw new Error(`Could not find asset for ${id}`);
+		}
 		return import(/* @vite-ignore */ assetPath);
 	} else {
 		return import(/* @vite-ignore */ id);

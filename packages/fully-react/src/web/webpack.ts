@@ -4,7 +4,7 @@ declare global {
 	function __webpack_require__(id: string): any;
 
 	// type client
-	var manifest: { root: string; client: { [key: string]: { file: string } } };
+	var manifest: { root: string; client: { [key: string]: string } };
 }
 
 export function setupWebpackEnv(
