@@ -345,15 +345,17 @@ export function reactServerComponents(): Plugin {
 			}
 		},
 		generateBundle(options) {
-			mkdirSync(options.dir!, { recursive: true });
-			writeFileSync(
-				join(options.dir!, "client-manifest.json"),
-				JSON.stringify([...clientModules.values()], null, 2),
-			);
-			writeFileSync(
-				join(options.dir!, "server-manifest.json"),
-				JSON.stringify([...serverModules.values()], null, 2),
-			);
+			if (process.env.RSC_WORKER) {
+				mkdirSync(options.dir!, { recursive: true });
+				writeFileSync(
+					join(options.dir!, "client-manifest.json"),
+					JSON.stringify([...clientModules.values()], null, 2),
+				);
+				writeFileSync(
+					join(options.dir!, "server-manifest.json"),
+					JSON.stringify([...serverModules.values()], null, 2),
+				);
+			}
 		},
 	};
 }
