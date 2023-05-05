@@ -1,7 +1,7 @@
 import { A } from "fully-react/link";
-import Comment from "~/components/comment";
+import Comment from "components/comment";
 import { IStory } from "~/types";
-import { PageProps } from "./[id].types";
+import { PageProps } from "./page.types";
 import fetchAPI from "~/api";
 
 export default async function StoryPage({ params }: PageProps) {

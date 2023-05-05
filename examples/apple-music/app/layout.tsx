@@ -1,6 +1,6 @@
 import { LayoutConfig, LayoutProps } from "./layout.types";
 
-import { AppleMusicDemo } from "../apple-music-demo";
+import { AppleMusicDemo } from "./apple-music-demo";
 import { Assets } from "fully-react/assets";
 
 export default async function Root({ children }: LayoutProps) {

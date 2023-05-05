@@ -1,6 +1,6 @@
 import { A } from "fully-react/link";
-import { PageConfig, PageProps } from "./[...stories].types";
-import Story from "~/components/story";
+import { PageConfig, PageProps } from "./page.types";
+import Story from "components/story";
 import fetchAPI from "~/api";
 import { IStory } from "~/types";
 
@@ -8,7 +8,6 @@ export const config = {
 	validateSearch: (searchParams) => {
 		return { page: searchParams.page as number };
 	},
-	
 } satisfies PageConfig;
 
 const mapStories: Record<string, string> = {

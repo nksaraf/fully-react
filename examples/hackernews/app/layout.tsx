@@ -1,6 +1,8 @@
 import { A } from "fully-react/link";
 import { Assets } from "fully-react/assets";
 import { LayoutProps } from "./layout.types";
+import "./style.css";
+import { Suspense } from "react";
 
 function Nav() {
 	return (
@@ -49,7 +51,7 @@ export default function Root({ children }: LayoutProps) {
 			</head>
 			<body>
 				<Nav />
-				{children}
+				<Suspense fallback={<div>Loading...</div>}>{children}</Suspense>
 			</body>
 		</html>
 	);
