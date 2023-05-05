@@ -10,7 +10,10 @@ export function prettyPrintRoutes(routes: any, tabs = 0) {
 			.map(() => "  ")
 			.join("");
 		if (r.children) {
+			console.log(`${gap}${r.path ?? "/"}(layout)`);
 			prettyPrintRoutes(r.children, tabs + 1);
+		} else {
+			console.log(`${gap}${r.path}`);
 		}
 	});
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { Component } from "react";
 
 interface NotFoundBoundaryProps {
 	notFound?: React.ReactNode;
@@ -9,7 +9,7 @@ interface NotFoundBoundaryProps {
 	children: React.ReactNode;
 }
 
-class NotFoundErrorBoundary extends React.Component<
+class NotFoundErrorBoundary extends Component<
 	NotFoundBoundaryProps,
 	{ notFoundTriggered: boolean }
 > {

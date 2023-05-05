@@ -6,7 +6,7 @@
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"types": ["vite/client", "node", "react/experimental"],
-		"lib": ["es2021", "dom", "DOM.Iterable"],
+		"lib": ["es2021", "dom", "DOM.Iterable", "ES2022"],
 		"skipLibCheck": true,
 		"moduleResolution": "Node",
 		"resolveJsonModule": true,

@@ -77,7 +77,9 @@ export async function collectStyles(devServer: ViteDevServer, match: string[]) {
 
 			await find_deps(devServer, node, deps);
 		}
-	} catch (e) {}
+	} catch (e) {
+		console.error(e);
+	}
 
 	for (const dep of deps) {
 		const parsed = new URL(dep.url, "http://localhost/");

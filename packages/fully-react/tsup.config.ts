@@ -52,7 +52,7 @@ export default defineConfig([
 		platform: "node",
 		target: "esnext",
 		shims: false,
-		external: ["/virtual:vavite-connect-handler"],
+		external: ["/virtual:vavite-connect-handler", "compression", "connect"],
 		noExternal: ["sirv"],
 	},
 	{

@@ -1,4 +1,4 @@
-import { Router } from "../src/web/router";
-import { mount } from "../src/web/entry";
+import { Router } from "./web/router";
+import { mount } from "./web/entry";
 
 mount(<Router />);

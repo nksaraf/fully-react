@@ -7,7 +7,7 @@ export const InlineStyles: React.FC<{ entries?: string[] }> = (import.meta.env
 			const { default: devServer } = await import("../../dev-server");
 			const styles = await collectStyles(
 				devServer,
-				props.entries ?? ["~/root.tsx"],
+				props.entries ?? [import.meta.env.APP],
 			);
 			return (
 				<>

@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React from "react";
 import {
 	RouteManifest,
 	RouteMatch,
@@ -6,11 +6,10 @@ import {
 	convertRoutesToDataRoutes,
 	matchRoutes,
 } from "../client/router/utils";
-import Router, { LayoutRouter } from "../client/router/Router";
+import Router, { LayoutRouter } from "../client/router/app-router";
 import { createLocation, createPath } from "../../fs-router/path";
 
 import { Assets } from "../../shared/assets";
-import { NotFoundBoundary } from "../client/NotFoundBoundary";
 import { PageProps } from "../types";
 import { StatusCode } from "./StatusCode";
 
@@ -80,7 +79,8 @@ export function createRouter(
 		const notFound = (
 			<NotFound {...props} params={{}} children={<div>404</div>} />
 		);
-		let content = notFound;
+
+		let content: React.ReactNode = notFound;
 
 		if (matches) {
 			const params = matches.reduce((params, match) => {

@@ -9,6 +9,8 @@ import { ReactRefreshScript } from "./dev";
 import { renderToReadableStream as _renderToHTMLStream } from "react-dom/server.edge";
 import { renderServerComponent } from "../react-server/render";
 import { sanitize } from "./htmlescape";
+import { isNotFoundError, isRedirectError } from "../shared/navigation";
+import { isNoSSRError } from "../client/dynamic/no-ssr-error";
 
 export type FlightResponseRef = {
 	current: null | Thenable<JSX.Element>;
@@ -166,7 +168,7 @@ export function createServerComponentRenderer<Props extends any = any>(
  * @returns ReadableStream of HTML
  */
 
-export async function renderToHTMLStream(
+export async function renderServerComponentToHTMLStream(
 	component: string,
 	props: any,
 	renderOptions: Env & {
@@ -186,6 +188,13 @@ export async function renderToHTMLStream(
 	return htmlStream.pipeThrough(bufferedTransformStream());
 }
 
+function errorHandler(error: any) {
+	if (isNotFoundError(error) || isRedirectError(error) || isNoSSRError(error)) {
+		return error.digest;
+	}
+
+	console.log(error);
+}
 export async function createHTMLResponse(
 	component: string,
 	props: any,
@@ -194,22 +203,36 @@ export async function createHTMLResponse(
 ) {
 	const transformStream = new TransformStream();
 	try {
-		const htmlStream = await renderToHTMLStream(component, props, {
-			...renderOptions,
-			dataStream: transformStream.writable,
-		});
-		return new Response(
-			htmlStream.pipeThrough(
-				inlineInitialServerComponent(transformStream.readable),
-			),
-			{
+		if (import.meta.env.ROUTER_MODE === "server") {
+			const htmlStream = (
+				await renderServerComponentToHTMLStream(component, props, {
+					...renderOptions,
+					dataStream: transformStream.writable,
+				})
+			).pipeThrough(inlineInitialServerComponent(transformStream.readable));
+
+			return new Response(htmlStream, {
 				...responseInit,
 				headers: {
 					"Content-Type": "text/html",
 					...(responseInit.headers ?? {}),
 				},
-			},
-		);
+			});
+		} else {
+			const { default: Component } = await renderOptions.loadModule(component);
+
+			const htmlStream = await _renderToHTMLStream(<Component {...props} />, {
+				...renderOptions,
+				onError: errorHandler,
+			});
+			return new Response(htmlStream, {
+				...responseInit,
+				headers: {
+					"Content-Type": "text/html",
+					...(responseInit.headers ?? {}),
+				},
+			});
+		}
 	} catch (e: unknown) {
 		const htmlStream = await _renderToHTMLStream(
 			<html id="__error__">

@@ -7,6 +7,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { parentPort } from "node:worker_threads";
+import { builtinModules } from "node:module";
 
 // create vite server
 let server: ViteDevServer;
@@ -82,7 +83,7 @@ async function handleMessage(msg: string) {
 				target: "node18",
 				manifest: true,
 				ssrManifest: true,
-				minify: process.env.MINIFY === "true",
+				minify: !(process.env.MINIFY === "false"),
 				rollupOptions: {
 					treeshake: true,
 					external: [
@@ -95,6 +96,7 @@ async function handleMessage(msg: string) {
 						"fs",
 						"path",
 						"url",
+						...builtinModules,
 					],
 				},
 			},

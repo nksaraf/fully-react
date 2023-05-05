@@ -164,6 +164,7 @@ type AgnosticBaseRouteObject = {
 	hasErrorBoundary?: boolean;
 	component?: any;
 	lazy?: LazyRouteFunction<AgnosticBaseRouteObject>;
+	file?: string;
 };
 
 /**

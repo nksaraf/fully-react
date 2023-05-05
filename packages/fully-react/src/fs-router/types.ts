@@ -46,6 +46,8 @@ export interface ConfigPageRoute {
 	file: string;
 
 	type: "page";
+
+	component?: React.FC<any>;
 }
 
 /**

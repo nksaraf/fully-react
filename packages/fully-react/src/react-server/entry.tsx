@@ -10,9 +10,38 @@ import { renderToServerElementStream } from "./stream";
 import { requestAsyncContext } from "../server/async-context";
 import viteDevServer from "../dev-server";
 import { webcrypto } from "node:crypto";
+import { isNoSSRError } from "../client/dynamic/no-ssr-error";
+import { createNestedPageRoutes } from "../fs-router/nested";
+import { matchRoutes } from "../fs-router/utils";
+import { relative } from "node:path";
+
+function errorHandler(error: any) {
+	if (isNotFoundError(error) || isRedirectError(error) || isNoSSRError(error)) {
+		return error.digest;
+	}
+
+	console.log(error);
+}
 
 function createDevRenderer() {
-	let loader = setupWebpackEnv();
+	const loader = setupWebpackEnv((chunk) => {
+		return viteDevServer.ssrLoadModule(/* @vite-ignore */ chunk);
+	});
+
+	const manifests = {
+		mode: "dev" as const,
+		routesManifest: viteDevServer.routesManifest,
+	};
+	const routes = createNestedPageRoutes(
+		{
+			manifests,
+		} as unknown as Env,
+		"root",
+	);
+
+	const inputs = matchRoutes(routes, "/")?.map((r) =>
+		relative(import.meta.env.ROOT_DIR, r.route?.file!),
+	);
 
 	const clientModuleMap = createModuleMapProxy();
 	// need to polyfill crypto for react-server
@@ -24,7 +53,7 @@ function createDevRenderer() {
 		findAssets: async () => {
 			const { collectStyles } = await import("../server/dev/index");
 
-			const styles = await collectStyles(viteDevServer, ["~/root"]);
+			const styles = await collectStyles(viteDevServer, inputs!);
 			return [
 				// @ts-ignore
 				...Object.entries(styles ?? {}).map(([key, value]) => ({
@@ -51,22 +80,18 @@ function createDevRenderer() {
 				request: new Request(props.url, {
 					headers: props.headers,
 				}),
-				response: {} as ResponseInit,
+				internal: { response: {} as ResponseInit },
 			},
 			async () => {
 				const { default: devServer } = await import("../dev-server");
-				const { default: Root } = await devServer.ssrLoadModule("~/root");
+				const { default: Root } = await devServer.ssrLoadModule(
+					import.meta.env.APP_ROOT_ENTRY,
+				);
 				return renderToServerElementStream(
 					<Root {...props} />,
 					clientModuleMap,
 					{
-						onError: (error: Error) => {
-							if (isNotFoundError(error) || isRedirectError(error)) {
-								return error.digest;
-							}
-							console.log("Errror while React server render");
-							console.log(error);
-						},
+						onError: errorHandler,
 					},
 				);
 			},
@@ -85,13 +110,7 @@ function createProdRenderer(env: Env) {
 			<component.default {...props} />,
 			createModuleMapProxy(),
 			{
-				onError: (error: Error) => {
-					if (isNotFoundError(error) || isRedirectError(error)) {
-						return error.digest;
-					}
-
-					console.log(error);
-				},
+				onError: errorHandler,
 			},
 		);
 	};

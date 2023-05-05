@@ -192,7 +192,12 @@ export function stripFileExtension(file: string) {
 export const routeModuleExts = [".js", ".jsx", ".ts", ".tsx", ".md", ".mdx"];
 
 export function isRouteModuleFile(filename: string): boolean {
-	return routeModuleExts.includes(path.extname(filename));
+	return (
+		routeModuleExts.includes(path.extname(filename)) &&
+		["route", "layout", "page"].includes(
+			stripFileExtension(path.basename(filename)),
+		)
+	);
 }
 
 export function toPath(id: string, removePathlessLayouts = true) {
@@ -246,7 +251,9 @@ export function defineFileSystemRoutes(
 			return;
 		}
 
-		throw new Error(`Invalid route module file: ${path.join(routesDir, file)}`);
+		return;
+
+		// throw new Error(`Invalid route module file: ${path.join(routesDir, file)}`);
 	});
 
 	const routeIds = Object.keys(files).sort(byLongestFirst);

@@ -1,5 +1,6 @@
 import sirv, { Options, RequestHandler } from "sirv";
-
+import compression from "compression";
+import connect from "connect";
 import { HattipHandler } from "@hattip/core";
 import { createMiddleware } from "@hattip/adapter-node";
 import { createServer } from "node:http";
@@ -27,16 +28,23 @@ async function init() {
 	const PORT = Number(process.env.PORT) || 3000;
 	const HOST = process.env.HOST || "localhost";
 
-	createServer((req, res) =>
-		sirvHandler(req, res, () => {
-			middleware(req, res, () => {
-				if (!res.writableEnded) {
-					res.statusCode = 404;
-					res.end();
-				}
-			});
-		}),
-	).listen(PORT, HOST, () => {
+	const app = connect();
+
+	// @ts-ignore
+	app.use(compression());
+
+	app.use(sirvHandler);
+
+	app.use(middleware);
+
+	app.use((req, res) => {
+		if (!res.writableEnded) {
+			res.statusCode = 404;
+			res.end();
+		}
+	});
+
+	createServer(app).listen(PORT, HOST, () => {
 		// eslint-disable-next-line no-console
 		console.log(`Server listening on http://${HOST}:${PORT}`);
 	});

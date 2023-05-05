@@ -8,6 +8,8 @@ import { createServerRouter } from "./handler";
 import fs from "node:fs";
 import { lazy } from "react";
 import viteDevServer from "../dev-server";
+import { createNestedPageRoutes } from "../fs-router/nested";
+import { matchRoutes } from "../fs-router/utils";
 
 /**
  * Traverses the module graph and collects assets for a given chunk
@@ -131,23 +133,33 @@ function getManifests() {
 	);
 
 	const clientSSRManifest: any = readJSON(
-		path.join(buildAppRoot, "dist", "static", "ssr-manifest.json"),
-	);
-
-	const clientDepsManifest: BuildManifest = readJSON(
-		path.join(buildAppRoot, "dist", "react-server", "client-deps.json"),
+		path.join(buildAppRoot, "dist", "server", "static-ssr-manifest.json"),
 	);
 
 	const serverManifest: BuildManifest = readJSON(
 		path.join(buildAppRoot, "dist", "server", "manifest.json"),
 	);
 
-	const reactServerManifest: BuildManifest = readJSON(
-		path.join(buildAppRoot, "dist", "server", "react-server", "manifest.json"),
-	);
+	let clientDepsManifest: any = undefined;
+	let reactServerManifest: any = undefined;
+	if (import.meta.env.ROUTER_MODE === "server") {
+		clientDepsManifest = readJSON(
+			path.join(buildAppRoot, "dist", "react-server", "client-deps.json"),
+		);
+
+		reactServerManifest = readJSON(
+			path.join(
+				buildAppRoot,
+				"dist",
+				"server",
+				"react-server",
+				"manifest.json",
+			),
+		);
+	}
 
 	const routesManifest: RouteManifest = readJSON(
-		path.join(buildAppRoot, "dist", "server", "react-server", "routes.json"),
+		path.join(buildAppRoot, "dist", "server", "routes.json"),
 	);
 
 	return {
@@ -168,7 +180,7 @@ function getManifests() {
 					"server",
 					serverManifest[relative(srcAppRoot, chunk)].file,
 				);
-			} else {
+			} else if (import.meta.env.ROUTER_MODE === "server") {
 				return join(
 					buildAppRoot,
 					"dist",
@@ -176,6 +188,8 @@ function getManifests() {
 					"react-server",
 					reactServerManifest[relative(srcAppRoot, chunk)].file,
 				);
+			} else {
+				throw new Error(`Could not find ${chunk} in server manifest`);
 			}
 		},
 	};
@@ -196,7 +210,19 @@ const createProdEnv = (): Env => {
 
 	setupWebpackEnv(loadModule);
 
-	// const routes = createServerRoutes(env, "root");
+	const routes = createNestedPageRoutes(
+		{
+			manifests: {
+				mode: "build",
+				...manifests,
+			},
+		} as unknown as Env,
+		"root",
+	);
+
+	const inputs = matchRoutes(routes, "/")?.map((r) =>
+		relative(import.meta.env.ROOT_DIR, r.route?.file!),
+	);
 
 	return {
 		clientModuleMap: createModuleMapProxy(),
@@ -206,14 +232,19 @@ const createProdEnv = (): Env => {
 		},
 		bootstrapScriptContent: `window.manifest = ${JSON.stringify({
 			root: process.cwd(),
-			client: Object.fromEntries(
-				Object.entries(manifests.clientDepsManifest).map(([key, asset]) => [
-					key,
-					manifests.clientSSRManifest[
-						relative(import.meta.env.ROOT_DIR, key)
-					][0],
-				]),
-			),
+			client:
+				import.meta.env.ROUTER_MODE === "server"
+					? Object.fromEntries(
+							Object.entries(manifests.clientDepsManifest).map(
+								([key, asset]) => [
+									key,
+									manifests.clientSSRManifest[
+										relative(import.meta.env.ROOT_DIR, key)
+									][0],
+								],
+							),
+					  )
+					: undefined,
 		})};`,
 		bootstrapModules: [
 			`/${
@@ -232,13 +263,15 @@ const createProdEnv = (): Env => {
 					...findAssetsInManifest(manifests.serverManifest, chunk)
 						.filter((asset) => !asset.endsWith(".js"))
 						.map((asset) => `/${asset}`),
-					...findAssetsInManifest(manifests.reactServerManifest, chunk)
-						.filter((asset) => !asset.endsWith(".js"))
-						.map((asset) => `/${asset}`),
+					...(import.meta.env.ROUTER_MODE === "server"
+						? findAssetsInManifest(manifests.reactServerManifest, chunk)
+								.filter((asset) => !asset.endsWith(".js"))
+								.map((asset) => `/${asset}`)
+						: []),
 				];
 			};
 
-			return [...findAssets("app/root.tsx")];
+			return inputs?.map((i) => findAssets(i)).flat() ?? [];
 		},
 	};
 };
@@ -249,23 +282,37 @@ const createProdEnv = (): Env => {
  */
 const createDevEnv = (): Env => {
 	const loader = setupWebpackEnv(async (chunk) => {
-		return await import(/* @vite-ignore */ chunk);
+		return await viteDevServer.ssrLoadModule(/* @vite-ignore */ chunk);
 	});
 
+	const manifests = {
+		mode: "dev" as const,
+		routesManifest: viteDevServer.routesManifest,
+	};
+	const routes = createNestedPageRoutes(
+		{
+			manifests,
+		} as unknown as Env,
+		"root",
+	);
+
+	const inputs = matchRoutes(routes, "/")?.map((r) =>
+		relative(import.meta.env.ROOT_DIR, r.route?.file!),
+	);
+
+	console.log(inputs);
 	return {
 		clientModuleMap: createModuleMapProxy(),
 		bootstrapScriptContent: undefined,
-		bootstrapModules: [import.meta.env.CLIENT_ENTRY],
+		bootstrapModules: [`/@fs${import.meta.env.CLIENT_ENTRY}`],
 		lazyComponent: (id: string) => {
-			return lazy(() => loader.load(id));
+			const importPath = `/@fs${id}`;
+			return lazy(() => import(/* @vite-ignore */ importPath));
 		},
-		manifests: {
-			mode: "dev",
-			routesManifest: viteDevServer.routesManifest,
-		},
+		manifests,
 		findAssets: async () => {
 			const { default: devServer } = await import("../dev-server");
-			const styles = await collectStyles(devServer, ["~/root"]);
+			const styles = await collectStyles(devServer, inputs!);
 			return [
 				...Object.entries(styles ?? {}).map(([key, value]) => ({
 					type: "style" as const,

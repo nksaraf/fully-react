@@ -1,4 +1,5 @@
-import { Env } from "../server/env";
+import { createElement, lazy, useMemo } from "react";
+import type { Env } from "../server/env";
 import type { RouteManifest } from "./types";
 import { RouteObject } from "./utils";
 
@@ -18,6 +19,8 @@ export function groupRoutesByParentId(manifest: RouteManifest) {
 	return routes;
 }
 
+const isServer = typeof window === "undefined";
+
 export function createNestedPageRoutes(
 	env: Env,
 	parentId = "",
@@ -29,13 +32,31 @@ export function createNestedPageRoutes(
 				return undefined as unknown as RouteObject;
 			}
 
+			const path =
+				(route.path?.length ?? 0) > 0 && route.path?.endsWith("/")
+					? route.path.slice(0, -1)
+					: route.path;
+
 			const dataRoute = {
 				id: route.id,
-				path: route.path,
+				path,
 				caseSensitive: route.caseSensitive,
 				children: undefined as any,
 				index: route.index,
-				component: env.lazyComponent(route.file),
+				// @ts-ignore
+				file: route.file,
+				component:
+					typeof route.file === "string"
+						? isServer
+							? (props: any) => {
+									const Component = useMemo(
+										() => env.lazyComponent(route.file),
+										[],
+									);
+									return createElement(Component, props);
+							  }
+							: env.lazyComponent(route.file)
+						: lazy(route.file),
 			} satisfies RouteObject;
 
 			const children = createNestedPageRoutes(env, route.id, routesByParentId);

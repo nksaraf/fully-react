@@ -1,7 +1,11 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { Measurer } from "../measurer";
 
 interface RequestAsyncContext {
-	response: ResponseInit;
+	internal: {
+		response: ResponseInit;
+		measurer?: Measurer;
+	};
 	request: Request;
 }
 

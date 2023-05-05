@@ -2,6 +2,8 @@ import React, { startTransition } from "react";
 import { createRoot, hydrateRoot, HydrationOptions } from "react-dom/client";
 import { setupWebpackEnv } from "./webpack";
 import { initMutation } from "../client/mutation";
+import { isNotFoundError, isRedirectError } from "../shared/navigation";
+import { isNoSSRError } from "../client/dynamic/no-ssr-error";
 
 export * from "./root";
 
@@ -41,7 +43,8 @@ export function loadModule(id: string) {
 		}
 		return import(/* @vite-ignore */ assetPath);
 	} else {
-		return import(/* @vite-ignore */ id);
+		const importPath = `/@fs${id}`;
+		return import(/* @vite-ignore */ importPath);
 	}
 }
 
@@ -49,6 +52,24 @@ export function mount(
 	element: JSX.Element,
 	{
 		loadModule: _loadModule,
+		onRecoverableError = (err: any) => {
+			const digest = err.digest;
+
+			// Using default react onRecoverableError
+			// x-ref: https://github.com/facebook/react/blob/d4bc16a7d69eb2ea38a88c8ac0b461d5f72cdcab/packages/react-dom/src/client/ReactDOMRoot.js#L83
+			const defaultOnRecoverableError =
+				typeof reportError === "function"
+					? // In modern browsers, reportError will dispatch an error event,
+					  // emulating an uncaught JavaScript error.
+					  reportError
+					: (error: any) => {
+							window.console.error(error);
+					  };
+
+			// Skip certain custom errors which are not expected to be reported on client
+			if (isNoSSRError({ digest })) return;
+			defaultOnRecoverableError(err);
+		},
 		...hydrationOptions
 	}: {
 		loadModule?: (chunk: string) => Promise<any>;
@@ -62,7 +83,10 @@ export function mount(
 		createRoot(document as unknown as HTMLElement).render(element);
 	} else {
 		startTransition(() => {
-			hydrateRoot(document, element, hydrationOptions);
+			hydrateRoot(document, element, {
+				...hydrationOptions,
+				onRecoverableError,
+			});
 		});
 	}
 }

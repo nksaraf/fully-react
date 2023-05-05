@@ -5,7 +5,7 @@ export interface RouterAPI {
 	push: (path: string, state?: any) => void;
 	replace: (path: string, state?: any) => void;
 	history: History;
-	mutate: (fn: any) => Promise<void>;
+	mutate: (fn: any) => void;
 	refresh: () => void;
 	preload: (
 		url: string,

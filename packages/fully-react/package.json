@@ -33,6 +33,7 @@
     "./web/entry": "./src/web/entry.ts",
     "./web/router": "./src/web/router.ts",
     "./router": "./src/client/router/index.ts",
+    "./dynamic": "./src/client/dynamic/index.tsx",
     "./navigation": "./src/shared/navigation.ts",
     "./refresh": "./src/client/refresh.ts",
     "./request": "./src/server/request.ts",
@@ -121,6 +122,9 @@
       "request": [
         "./src/server/request.ts"
       ],
+      "dynamic": [
+        "./src/client/dynamic/index.tsx"
+      ],
       "dev": [
         "./src/server/dev/index.ts"
       ],
@@ -156,10 +160,14 @@
   ],
   "devDependencies": {
     "@cyco130/eslint-config": "^3.0.2",
+    "@types/compression": "^1.7.2",
+    "@types/connect": "^3.4.35",
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
     "@types/sade": "^1.7.4",
+    "compression": "^1.7.4",
+    "connect": "^3.7.0",
     "eslint": "^8.37.0",
     "minimatch": "^8.0.3",
     "publint": "^0.1.11",

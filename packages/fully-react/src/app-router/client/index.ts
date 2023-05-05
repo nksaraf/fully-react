@@ -7,7 +7,7 @@ import {
 
 export { A } from "../shared/A";
 export * from "../../client/router";
-export { default as Router } from "./router/Router";
+export { default as Router } from "./router/app-router";
 export { interpolatePath } from "./router/types/path";
 export type { LinkFn as TypedLink } from "./router/link";
 export type { PageProps } from "../types";

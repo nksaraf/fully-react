@@ -7,6 +7,7 @@ import { createHTMLResponse } from "./html";
 import { createServerComponentResponse } from "./server-components";
 import { decodeServerFunctionArgs } from "../react-server/stream";
 import { requestAsyncContext } from "./async-context";
+import { Measurer } from "../measurer";
 
 export async function handleActionRequest(request: Request, env: Env) {
 	let actionId = request.headers.get("x-action")!;
@@ -42,7 +43,7 @@ export async function handleActionRequest(request: Request, env: Env) {
 	if (isMutating) {
 		const responseInit: ResponseInit = {};
 		return requestAsyncContext.run(
-			{ request, response: responseInit },
+			{ request, internal: { response: responseInit } },
 			async () => {
 				try {
 					await action(...data);
@@ -88,7 +89,7 @@ export async function handleActionRequest(request: Request, env: Env) {
 			const url = new URL(request.url);
 			const responseInit: ResponseInit = {};
 			return requestAsyncContext.run(
-				{ request, response: responseInit },
+				{ request, internal: { response: responseInit } },
 				async () => {
 					return createHTMLResponse(
 						"root",
@@ -121,31 +122,45 @@ export async function handleActionRequest(request: Request, env: Env) {
 export async function handlePageRequest(request: Request, env: Env) {
 	const url = new URL(request.url);
 	const responseInit: ResponseInit = {};
-	const response = await requestAsyncContext.run(
-		{ request, response: responseInit },
+	const measurer = new Measurer();
+
+	const response = await measurer.time(
+		"createHTMLResponse",
 		async () =>
-			await createHTMLResponse(
-				"root",
-				{
-					url: request.url,
-					searchParams: Object.fromEntries(url.searchParams.entries()),
-					headers: Object.fromEntries(request.headers.entries()),
-					params: {},
-				},
-				env,
-				responseInit,
+			await requestAsyncContext.run(
+				{ request, internal: { response: responseInit } },
+				async () =>
+					await createHTMLResponse(
+						import.meta.env.APP_ROOT_ENTRY!,
+						{
+							url: request.url,
+							searchParams: Object.fromEntries(url.searchParams.entries()),
+							headers: Object.fromEntries(request.headers.entries()),
+							params: {},
+						},
+						env,
+						responseInit,
+					),
 			),
 	);
 
-	console.log("response", response.status, response.url);
-	return response;
+	console.log(request.url, response.status);
+	const headers = new Headers(response.headers);
+
+	(await measurer.toHeaders()).forEach((value, key) => {
+		headers.set(key, value);
+	});
+
+	return new Response(response.body, {
+		headers,
+	});
 }
 
 export async function handleServerComponentRequest(request: Request, env: Env) {
 	const cleanedUrl = request.url.replace(/\.rsc$/, "");
 	const url = new URL(request.headers.get("x-navigate") ?? "/", cleanedUrl);
 	const response: ResponseInit = {};
-	return requestAsyncContext.run({ request, response }, () =>
+	return requestAsyncContext.run({ request, internal: { response } }, () =>
 		createServerComponentResponse(
 			"root",
 			{

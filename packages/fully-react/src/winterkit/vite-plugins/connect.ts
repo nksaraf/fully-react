@@ -57,6 +57,8 @@ export default function connect(): Plugin[] {
 					return path
 						.resolve(dirname, "entry-standalone-bundled-sirv.js")
 						.replace(/\\/g, "/");
+				} else if (id === "/virtual:vavite-connect-vercel") {
+					return path.resolve(dirname, "entry-vercel.js").replace(/\\/g, "/");
 				}
 			},
 		},

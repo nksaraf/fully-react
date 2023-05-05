@@ -1,3 +1,5 @@
+"use client";
+
 import { callServer } from "../stream";
 import { createFromReadableStream } from "react-server-dom-webpack/client.browser";
 import { useCallback } from "react";

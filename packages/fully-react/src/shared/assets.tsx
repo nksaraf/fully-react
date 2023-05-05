@@ -1,5 +1,6 @@
 import { Env } from "../server/env";
 import { ReactRefreshScript } from "../server/dev/react-refresh-script";
+import { cache, use } from "react";
 
 type AssetDesc = string | { type: "style"; style: string; src?: string };
 
@@ -65,29 +66,54 @@ export const Style = ({ style, src }: { style: string; src?: string }) => {
 	);
 };
 
-export async function Assets({
-	assets = [],
-}: {
-	assets?: AssetDesc[];
-}) {
+export function Assets({ assets = [] }: { assets?: AssetDesc[] }) {
 	if (import.meta.env.SSR) {
-		const env = globalThis.env as Env;
-		const allAssets = [
-			...new Set([...assets, ...(await env.findAssets())]).values(),
-		];
-
 		return (
 			<>
-				{allAssets.map((asset, index) => {
-					if (typeof asset === "string") {
-						return <Asset file={asset} key={asset} />;
-					} else if (asset.type === "style") {
-						return <Style style={asset.style} key={asset.src ?? `${index}`} />;
-					}
-				})}
+				{import.meta.env.ROUTER_MODE === "server" ? (
+					<ServerAssets />
+				) : (
+					<ClientAssets />
+				)}
 				{import.meta.env.DEV ? <ReactRefreshScript /> : null}
 			</>
 		);
 	}
 	return null;
+}
+
+export async function ServerAssets() {
+	const allAssets = [...new Set([...(await env.findAssets())]).values()];
+	console.log(allAssets);
+	return (
+		<>
+			{allAssets.map((asset, index) => {
+				if (typeof asset === "string") {
+					return <Asset file={asset} key={asset} />;
+				} else if (asset.type === "style") {
+					return <Style style={asset.style} key={asset.src ?? `${index}`} />;
+				}
+			})}
+		</>
+	);
+}
+
+const findAssets = async () => {
+	return [...new Set([...(await env.findAssets())]).values()];
+};
+
+export function ClientAssets() {
+	const allAssets = use(findAssets());
+
+	return (
+		<>
+			{allAssets.map((asset, index) => {
+				if (typeof asset === "string") {
+					return <Asset file={asset} key={asset} />;
+				} else if (asset.type === "style") {
+					return <Style style={asset.style} key={asset.src ?? `${index}`} />;
+				}
+			})}
+		</>
+	);
 }

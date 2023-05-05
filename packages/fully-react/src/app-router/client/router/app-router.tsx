@@ -15,8 +15,8 @@ import {
 	useState,
 } from "react";
 
-import { NotFoundBoundary } from "../NotFoundBoundary";
-import { RedirectBoundary } from "./RedirectBoundary";
+import { NotFoundBoundary } from "./not-found-boundary";
+import { RedirectBoundary } from "./redirect-boundary";
 import { addMutationListener } from "../../../client/mutation";
 import { createElementFromServer } from "../../../client/stream";
 import { refresh } from "../../../client/refresh";

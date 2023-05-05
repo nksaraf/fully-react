@@ -1,3 +1,4 @@
 import handler from "/virtual:vavite-connect-handler";
 
-export default handler;
+import { createMiddleware } from "@hattip/adapter-node";
+export default createMiddleware(handler);

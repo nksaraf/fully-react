@@ -25,6 +25,9 @@ export const require = createRequire(import.meta.url);
 
 export function react({
 	server = true,
+	router = {
+		mode: "server" as "server" | "client",
+	},
 	inspect: _inspect = Boolean(process.env.INSPECT?.length),
 	reactRefresh: _reactRefresh = true,
 	tsconfigPaths: _tsconfigPaths = true,
@@ -36,6 +39,7 @@ export function react({
 		fullyReactBuild({
 			clientEntry,
 			rscEntry,
+			router,
 		}),
 		_tsconfigPaths ? tsconfigPaths() : undefined,
 		_inspect

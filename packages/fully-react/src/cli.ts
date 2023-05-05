@@ -1,4 +1,4 @@
-import { Manifest, resolveConfig } from "vite";
+import { Manifest, ResolvedConfig, resolveConfig } from "vite";
 import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { removeDir, writeJson } from "./build/fs";
@@ -11,15 +11,21 @@ import { getRedirects } from "./build/vercel/redirects";
 import { pathToFileURL } from "node:url";
 import sade from "sade";
 import supportsColor from "supports-color";
+import type { ReactEnv } from "./dev-server/fully-react";
+import invariant from "tiny-invariant";
 
 async function adapt() {
 	const buildTempFolder = pathToFileURL(process.cwd() + "/");
 	const outDir = new URL(".vercel/output/", buildTempFolder);
-	const serverEntry = new URL("dist/server/handler.js", buildTempFolder);
+	const serverEntry = new URL("dist/server/vercel.js", buildTempFolder);
 	const functionFolder = new URL(
 		".vercel/output/functions/render.func/",
 		buildTempFolder,
 	);
+
+	const config = (await resolveConfig({}, "build")) as ResolvedConfig & {
+		react: ReactEnv;
+	};
 
 	const staticOutDir = new URL("static", outDir);
 	const staticInDir = new URL("dist/static", buildTempFolder);
@@ -42,42 +48,67 @@ async function adapt() {
 	const serverManifest: Manifest = JSON.parse(
 		readFileSync("dist/server/manifest.json", "utf-8"),
 	);
-	const serverClientManifest: string[] = JSON.parse(
-		readFileSync("dist/server/react-server/client-manifest.json", "utf-8"),
-	);
-	const serverServerManifest: string[] = JSON.parse(
-		readFileSync("dist/server/react-server/server-manifest.json", "utf-8"),
-	);
 
 	const entries: URL[] = [];
-	serverServerManifest.forEach((s) => {
-		entries.push(
-			new URL(
-				`./` + serverManifest[relative(process.cwd(), s)].file,
-				serverEntry,
-			),
+
+	if (config.react.needsReactServer) {
+		const serverClientManifest: string[] = JSON.parse(
+			readFileSync("dist/server/react-server/client-manifest.json", "utf-8"),
 		);
-	});
-	serverClientManifest.forEach((s) => {
-		entries.push(
-			new URL(
-				`./` + serverManifest[relative(process.cwd(), s)].file,
-				serverEntry,
-			),
+		const serverServerManifest: string[] = JSON.parse(
+			readFileSync("dist/server/react-server/server-manifest.json", "utf-8"),
 		);
-	});
+
+		serverServerManifest.forEach((s) => {
+			entries.push(
+				new URL(
+					`./` + serverManifest[relative(process.cwd(), s)].file,
+					serverEntry,
+				),
+			);
+		});
+
+		serverClientManifest.forEach((s) => {
+			entries.push(
+				new URL(
+					`./` + serverManifest[relative(process.cwd(), s)].file,
+					serverEntry,
+				),
+			);
+		});
+	}
 
 	// Remove previous output folder
 	await removeDir(outDir);
 
 	cpSync(staticInDir, staticOutDir, { recursive: true });
 
+	const routeChunks: string[] = [];
+	if (config.react.routesManifest) {
+		Object.entries(config.react.routesManifest).forEach(([name, route]) => {
+			let chunkName = name.replaceAll(":", "_").replaceAll("/", "_");
+			chunkName = chunkName.length > 0 ? chunkName : "root-layout";
+			routeChunks.push(chunkName);
+		});
+	}
+
 	// Copy necessary files (e.g. node_modules/)
 	const { handler } = await copyDependenciesToFunction({
 		entries: [
 			serverEntry,
-			new URL("dist/server/react-server/react-server.js", buildTempFolder),
-			...entries,
+			new URL("dist/server/root.js", buildTempFolder),
+			...routeChunks.map(
+				(chunk) => new URL(`dist/server/${chunk}.js`, buildTempFolder),
+			),
+			...(config.react.needsReactServer
+				? [
+						new URL(
+							"dist/server/react-server/react-server.js",
+							buildTempFolder,
+						),
+						...entries,
+				  ]
+				: []),
 		],
 		outDir: functionFolder,
 		// includeFiles: inc,
@@ -87,7 +118,7 @@ async function adapt() {
 		// 	excludeFiles?.map((file) => new URL(file, _config.root)) || [],
 	});
 
-	const root = handler.replace("dist/server/handler.js", "");
+	const root = handler.replace("dist/server/vercel.js", "");
 
 	// Enable ESM
 	// https://aws.amazon.com/blogs/compute/using-node-js-es-modules-and-top-level-await-in-aws-lambda/
@@ -109,6 +140,16 @@ async function adapt() {
 	await writeJson(
 		new URL(root + "dist/server/static-manifest.json", functionFolder),
 		JSON.parse(readFileSync("dist/static/manifest.json", "utf-8")),
+	);
+
+	await writeJson(
+		new URL(root + "dist/server/static-ssr-manifest.json", functionFolder),
+		JSON.parse(readFileSync("dist/static/ssr-manifest.json", "utf-8")),
+	);
+
+	await writeJson(
+		new URL(root + "dist/server/routes.json", functionFolder),
+		JSON.parse(readFileSync("dist/server/routes.json", "utf-8")),
 	);
 
 	await writeJson(
@@ -135,32 +176,32 @@ function getRuntime() {
 }
 
 async function generate() {
-	const config = await resolveConfig({}, "build");
-	console.log(config);
+	const config = await resolveConfig(
+		{
+			build: {
+				ssr: true,
+			},
+		},
+		"build",
+	);
+	const env = (config as any).react as ReactEnv;
 	const handlerPath = join(process.cwd(), "/dist/server/handler.js");
 	const staticOutDir = join(process.cwd(), "/dist/static");
 	const { default: handler } = await import(handlerPath);
 
-	let routes: RouteManifest = {
-		"/": {
-			type: "page",
-			file: join(process.cwd(), "app", "root.tsx"),
-			id: "/",
-			path: "/",
-			parentId: "root",
-			index: true,
-		},
+	const getUrl = (url: string) => {
+		if (url === "") {
+			return "index.html";
+		}
+
+		return url.endsWith("/")
+			? `${url.slice(1)}index.html`
+			: `${url.slice(1)}.html`;
 	};
 
-	if (existsSync(join(process.cwd(), "app", "routes"))) {
-		routes = defineFileSystemRoutes(join(process.cwd(), "app"));
-	}
-
-	const getUrl = (url: string) =>
-		url.endsWith("/") ? `${url.slice(1)}index.html` : `${url.slice(1)}.html`;
-	const urls = ["/", "/new", "/show"];
-
-	// console.log(urls.map(getUrl));
+	const urls = Object.values(env.pageRoutes)
+		.filter((e) => e.path?.endsWith("/") || e.index)
+		.map((e) => e.path?.slice(0, e.path?.length - 1) ?? "/");
 
 	for await (const url of urls) {
 		const html = await (
@@ -173,20 +214,22 @@ async function generate() {
 	}
 
 	for await (const url of urls) {
-		const html = await (
-			await handler({
-				request: new Request("https://example.com" + url + ".rsc", {
-					headers: {
-						accept: "text/x-component",
-					},
-				}),
-			})
-		).text();
+		if (env.routerMode === "server") {
+			const html = await (
+				await handler({
+					request: new Request("https://example.com" + url + ".rsc", {
+						headers: {
+							accept: "text/x-component",
+						},
+					}),
+				})
+			).text();
 
-		writeFileSync(
-			join(staticOutDir, getUrl(url).replace(".html", ".rsc")),
-			html,
-		);
+			writeFileSync(
+				join(staticOutDir, getUrl(url).replace(".html", ".rsc")),
+				html,
+			);
+		}
 	}
 }
 
@@ -205,6 +248,39 @@ react
 			shell: true,
 			env: { ...process.env, FORCE_COLOR: "true" },
 		});
+	});
+
+react
+	.command("adapt")
+	.describe("Adapt the server to the environment")
+	.action(async () => {
+		adapt();
+	});
+
+react
+	.command("generate")
+	.describe("Adapt the server to the environment")
+	.action(async () => {
+		await generate();
+	});
+
+react
+	.command("build")
+	.describe("Build")
+	.action(async () => {
+		const serverBuild = await execa("vite", ["build", "--ssr"], {
+			stdio: "inherit",
+			shell: true,
+			env: { ...process.env, FORCE_COLOR: "true" },
+		});
+
+		await execa("vite", ["build"], {
+			stdio: "inherit",
+			shell: true,
+			env: { ...process.env, FORCE_COLOR: "true" },
+		});
+
+		await generate();
 	});
 
 react.parse(process.argv);
