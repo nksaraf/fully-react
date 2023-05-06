@@ -50,9 +50,9 @@
     "lucide-react": "^0.130.0",
     "minimatch": "^8.0.3",
     "prisma": "^4.12.0",
-    "react": "18.3.0-next-b14f8da15-20230403",
-    "react-dom": "18.3.0-next-b14f8da15-20230403",
-    "react-server-dom-webpack": "18.3.0-next-b14f8da15-20230403",
+    "react": "0.0.0-experimental-efb381bbf-20230505",
+    "react-dom": "0.0.0-experimental-efb381bbf-20230505",
+    "react-server-dom-webpack": "0.0.0-experimental-efb381bbf-20230505",
     "rsc-auth": "workspace:^0.0.1",
     "tailwind-merge": "^1.11.0",
     "tiny-invariant": "^1.3.1"
@@ -60,6 +60,7 @@
   "devDependencies": {
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
+    "@vinxi/vite-plugin-inspect": "^0.6.27",
     "@vitejs/plugin-react": "^3.1.0",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.21",

@@ -46,9 +46,10 @@ function createDevRenderer() {
 		import.meta.env.ROUTER_MODE,
 	);
 
-	const inputs = matchRoutes(routes, "/")?.map((r) =>
-		relative(import.meta.env.ROOT_DIR, r.route?.file!),
-	);
+	const inputs =
+		matchRoutes(routes, "/")?.map((r) =>
+			relative(import.meta.env.ROOT_DIR, r.route?.file!),
+		) ?? [];
 
 	const clientModuleMap = createModuleMapProxy();
 	// need to polyfill crypto for react-server

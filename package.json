@@ -17,7 +17,7 @@
   "pnpm": {
     "patchedDependencies": {
       "vite@4.3.0": "patches/vite@4.3.0.patch",
-      "react-server-dom-webpack@18.3.0-next-b14f8da15-20230403": "patches/react-server-dom-webpack@18.3.0-next-b14f8da15-20230403.patch",
+      "react-server-dom-webpack@0.0.0-experimental-efb381bbf-20230505": "patches/react-server-dom-webpack@0.0.0-experimental-efb381bbf-20230505.patch",
       "@types/react-dom@18.0.11": "patches/@types__react-dom@18.0.11.patch",
       "@types/react@18.0.33": "patches/@types__react@18.0.33.patch"
     }

@@ -5,12 +5,13 @@ import { Env } from "./env";
 import { createActionResponse } from "./action";
 import { createHTMLResponse } from "./html";
 import { createServerComponentResponse } from "./server-components";
-import { decodeServerFunctionArgs } from "../react-server/stream";
+import { decodeAction, decodeServerFunctionArgs } from "../react-server/stream";
 import { requestAsyncContext } from "./async-context";
 import { Measurer } from "../measurer";
+import { decodeReply } from "react-server-dom-webpack/server.edge";
 
 export async function handleActionRequest(request: Request, env: Env) {
-	let actionId = request.headers.get("x-action")!;
+	const actionId = request.headers.get("x-action")!;
 	const isAction = !!actionId;
 	const isForm =
 		request.headers.get("content-type") === "application/x-www-form-urlencoded";
@@ -24,9 +25,11 @@ export async function handleActionRequest(request: Request, env: Env) {
 
 	let data: any;
 	if (isForm || isMultiPartForm) {
-		const formData = await request.formData();
-		data = [formData];
-		actionId = formData.get("$$id") as string;
+		// const formData = await request.formData();
+		// console.log(formData);
+		const encodedArgs = await request.formData();
+		data = await decodeServerFunctionArgs(encodedArgs, env.clientModuleMap);
+		console.log(data);
 	} else {
 		const encodedArgs = await request.text();
 		data = await decodeServerFunctionArgs(encodedArgs);

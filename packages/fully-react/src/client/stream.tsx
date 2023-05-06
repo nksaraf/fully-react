@@ -7,14 +7,14 @@ import {
 export async function callServer(id: string, args: any[]) {
 	const actionId = id;
 
-	const isMutating = !!globalThis.isMutating;
+	// const isMutating = !!globalThis.isMutating;
 
 	const response = await fetch("", {
 		method: "POST",
 		headers: {
 			Accept: "text/x-component",
 			"x-action": actionId,
-			"x-mutation": isMutating ? "1" : "0",
+			"x-mutation": "1",
 		},
 		body: await encodeActionArgs(args),
 	});
@@ -25,9 +25,9 @@ export async function callServer(id: string, args: any[]) {
 
 	const data = createFromReadableStream(response.body!, { callServer });
 
-	if (isMutating) {
-		globalThis.mutate(data);
-	}
+	// if (isMutating) {
+	globalThis.mutate(data);
+	// }
 
 	return data;
 }

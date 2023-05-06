@@ -10,9 +10,9 @@
     "start": "node dist/server/index.js"
   },
   "dependencies": {
-    "react": "18.3.0-next-b14f8da15-20230403",
-    "react-dom": "18.3.0-next-b14f8da15-20230403",
-    "react-server-dom-webpack": "18.3.0-next-b14f8da15-20230403",
+    "react": "0.0.0-experimental-efb381bbf-20230505",
+    "react-dom": "0.0.0-experimental-efb381bbf-20230505",
+    "react-server-dom-webpack": "0.0.0-experimental-efb381bbf-20230505",
     "fully-react": "^0.0.2"
   },
   "devDependencies": {

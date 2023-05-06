@@ -4,18 +4,10 @@ import { ErrorBoundary, ResetButton } from "fully-react/error-boundary";
 import { getCount, increment } from "./api";
 
 import { Assets } from "fully-react/assets";
-import { Form } from "fully-react/form";
 
-async function Counter() {
-	return (
-		<Form action={increment}>
-			<div>{await getCount()}</div>
-			<button>Increment</button>
-		</Form>
-	);
-}
+import { OptimisticCount, Pending, Form } from "./Pending";
 
-export default function Root() {
+export default async function Root() {
 	return (
 		<html lang="en">
 			<head>
@@ -34,7 +26,7 @@ export default function Root() {
 							</div>
 						}
 					>
-						<Counter />
+						<Form increment={increment} count={await getCount()} />
 					</ErrorBoundary>
 				</div>
 			</body>
