@@ -218,6 +218,8 @@ const createProdEnv = (): Env => {
 			},
 		} as unknown as Env,
 		"root",
+		undefined,
+		import.meta.env.ROUTER_MODE,
 	);
 
 	const inputs = matchRoutes(routes, "/")?.map((r) =>
@@ -289,26 +291,33 @@ const createDevEnv = (): Env => {
 		mode: "dev" as const,
 		routesManifest: viteDevServer.routesManifest,
 	};
+
+	const lazyComponent = (id: string) => {
+		const importPath = `/@fs${id}`;
+		return lazy(
+			() => viteDevServer.ssrLoadModule(/* @vite-ignore */ importPath) as any,
+		);
+	};
+
 	const routes = createNestedPageRoutes(
 		{
 			manifests,
+			lazyComponent,
 		} as unknown as Env,
 		"root",
+		undefined,
+		import.meta.env.ROUTER_MODE,
 	);
 
 	const inputs = matchRoutes(routes, "/")?.map((r) =>
 		relative(import.meta.env.ROOT_DIR, r.route?.file!),
 	);
 
-	console.log(inputs);
 	return {
 		clientModuleMap: createModuleMapProxy(),
 		bootstrapScriptContent: undefined,
 		bootstrapModules: [`/@fs${import.meta.env.CLIENT_ENTRY}`],
-		lazyComponent: (id: string) => {
-			const importPath = `/@fs${id}`;
-			return lazy(() => import(/* @vite-ignore */ importPath));
-		},
+		lazyComponent,
 		manifests,
 		findAssets: async () => {
 			const { default: devServer } = await import("../dev-server");

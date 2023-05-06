@@ -107,7 +107,12 @@ const createBundlerEnv = ({
 					return null;
 				},
 			} as unknown as Env;
-			const routes = createNestedPageRoutes(env, "root");
+			const routes = createNestedPageRoutes(
+				env,
+				"root",
+				undefined,
+				this.routerMode,
+			);
 
 			prettyPrintRoutes(routes, 2);
 
@@ -330,24 +335,24 @@ export function fullyReactBuild({
 		configResolved(config) {
 			reactEnv.configResolved(config);
 		},
-		transform(code, id, options) {
-			const isSSR = options?.ssr;
-			function replaceDynamicImport(code: string) {
-				const dynamicImportRegex =
-					/(dynamic\()(\(\) => )import\((.*?)\)([\s\S]*?)(, \{[\s\S]*?ssr:\s*false[\s\S]*?\}\))/g;
+		// transform(code, id, options) {
+		// 	const isSSR = options?.ssr;
+		// 	function replaceDynamicImport(code: string) {
+		// 		const dynamicImportRegex =
+		// 			/(dynamic\()(\(\) => )import\((.*?)\)([\s\S]*?)(, \{[\s\S]*?ssr:\s*false[\s\S]*?\}\))/g;
 
-				return code.replace(
-					dynamicImportRegex,
-					(_, before, __, importArg, importTransform, after) => {
-						const dummyError =
-							'() => { throw new Error("No dynamic import"); }';
-						return before + dummyError + after;
-					},
-				);
-			}
+		// 		return code.replace(
+		// 			dynamicImportRegex,
+		// 			(_, before, __, importArg, importTransform, after) => {
+		// 				const dummyError =
+		// 					'() => { throw new Error("No dynamic import"); }';
+		// 				return before + dummyError + after;
+		// 			},
+		// 		);
+		// 	}
 
-			return isSSR ? replaceDynamicImport(code) : undefined;
-		},
+		// 	return isSSR ? replaceDynamicImport(code) : undefined;
+		// },
 		config(config, env) {
 			reactEnv.bootstrap(config, env);
 			reactEnv.generateRouteTypes();

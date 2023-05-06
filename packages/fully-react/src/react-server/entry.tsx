@@ -32,11 +32,18 @@ function createDevRenderer() {
 		mode: "dev" as const,
 		routesManifest: viteDevServer.routesManifest,
 	};
+
+	const lazyComponent = (id: string) => {
+		return lazy(() => viteDevServer.ssrLoadModule(id) as any);
+	};
 	const routes = createNestedPageRoutes(
 		{
 			manifests,
+			lazyComponent,
 		} as unknown as Env,
 		"root",
+		undefined,
+		import.meta.env.ROUTER_MODE,
 	);
 
 	const inputs = matchRoutes(routes, "/")?.map((r) =>
@@ -63,9 +70,7 @@ function createDevRenderer() {
 				})),
 			];
 		},
-		lazyComponent: (id: string) => {
-			return lazy(() => import(/* @vite-ignore */ id));
-		},
+		lazyComponent,
 		manifests: {
 			mode: "dev",
 			routesManifest: viteDevServer.routesManifest,

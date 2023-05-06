@@ -23,6 +23,8 @@ const routes = createNestedPageRoutes(
 				},
 		  } as unknown as Env),
 	"root",
+	undefined,
+	import.meta.env.ROUTER_MODE,
 );
 
 export default createRouter(routes);

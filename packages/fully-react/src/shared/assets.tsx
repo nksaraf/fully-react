@@ -84,7 +84,6 @@ export function Assets({ assets = [] }: { assets?: AssetDesc[] }) {
 
 export async function ServerAssets() {
 	const allAssets = [...new Set([...(await env.findAssets())]).values()];
-	console.log(allAssets);
 	return (
 		<>
 			{allAssets.map((asset, index) => {

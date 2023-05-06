@@ -1,4 +1,6 @@
 import { LayoutConfig, LayoutProps } from "./layout.types";
+import "cal-sans";
+import "./layout.css";
 
 import { AppleMusicDemo } from "./apple-music-demo";
 import { Assets } from "fully-react/assets";

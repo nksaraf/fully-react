@@ -25,6 +25,7 @@ export function createNestedPageRoutes(
 	env: Env,
 	parentId = "",
 	routesByParentId = groupRoutesByParentId(env.manifests?.routesManifest || {}),
+	routerMode: string,
 ): RouteObject[] {
 	return (routesByParentId[parentId] || [])
 		.map((route) => {
@@ -48,18 +49,28 @@ export function createNestedPageRoutes(
 				component:
 					typeof route.file === "string"
 						? isServer
-							? (props: any) => {
-									const Component = useMemo(
-										() => env.lazyComponent(route.file),
-										[],
-									);
-									return createElement(Component, props);
-							  }
+							? routerMode === "client"
+								? (props: any) => {
+										const Component = useMemo(
+											() => env.lazyComponent(route.file),
+											[],
+										);
+										return createElement(Component, props);
+								  }
+								: (props: any) => {
+										const Component = env.lazyComponent(route.file);
+										return createElement(Component, props);
+								  }
 							: env.lazyComponent(route.file)
 						: lazy(route.file),
 			} satisfies RouteObject;
 
-			const children = createNestedPageRoutes(env, route.id, routesByParentId);
+			const children = createNestedPageRoutes(
+				env,
+				route.id,
+				routesByParentId,
+				routerMode,
+			);
 			if (children.length > 0) dataRoute.children = children;
 			return dataRoute;
 		})

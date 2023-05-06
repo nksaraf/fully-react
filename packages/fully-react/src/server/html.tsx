@@ -207,6 +207,7 @@ export async function createHTMLResponse(
 			const htmlStream = (
 				await renderServerComponentToHTMLStream(component, props, {
 					...renderOptions,
+					onError: errorHandler,
 					dataStream: transformStream.writable,
 				})
 			).pipeThrough(inlineInitialServerComponent(transformStream.readable));
