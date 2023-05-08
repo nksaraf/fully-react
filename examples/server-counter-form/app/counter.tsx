@@ -2,7 +2,6 @@
 
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
 import { experimental_useOptimistic as useOptimisticState } from "react";
-import { increment } from "./api";
 
 export function Button({ children, pending }) {
 	const status = useFormStatus();
@@ -17,7 +16,7 @@ export function Button({ children, pending }) {
 // 	}
 // }
 
-export function Counter({ count }) {
+export function Counter({ count, increment }) {
 	const [state, optimisticIcrement] = useOptimisticState(
 		count,
 		(prev) => prev + 1,
