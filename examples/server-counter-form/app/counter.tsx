@@ -3,18 +3,10 @@
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
 import { experimental_useOptimistic as useOptimisticState } from "react";
 
-export function Button({ children, pending }) {
+function Button({ children, pending }) {
 	const status = useFormStatus();
 	return <button>{status.pending ? pending : children}</button>;
 }
-
-// declare global {
-// 	namespace React {
-// 		interface FormHTMLAttributes {
-// 			action?: Promise<any> | string | undefined;
-// 		}
-// 	}
-// }
 
 export function Counter({ count, increment }) {
 	const [state, optimisticIcrement] = useOptimisticState(
