@@ -5,7 +5,7 @@ import { getCount, increment } from "./api";
 
 import { Assets } from "fully-react/assets";
 
-import { OptimisticCount, Pending, Form } from "./Pending";
+import { Counter } from "./counter";
 
 export default async function Root() {
 	return (
@@ -26,7 +26,7 @@ export default async function Root() {
 							</div>
 						}
 					>
-						<Form increment={increment} count={await getCount()} />
+						<Counter increment={increment} count={await getCount()} />
 					</ErrorBoundary>
 				</div>
 			</body>

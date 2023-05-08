@@ -2,11 +2,11 @@
 
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
 import { experimental_useOptimistic as useOptimisticState } from "react";
-export function Pending() {
-	const status = useFormStatus();
-	console.log(status);
+import { increment } from "./api";
 
-	return <div>{status.pending ? "Incrementing..." : ""}</div>;
+export function Button({ children, pending }) {
+	const status = useFormStatus();
+	return <button>{status.pending ? pending : children}</button>;
 }
 
 declare global {
@@ -17,25 +17,20 @@ declare global {
 	}
 }
 
-export function OptimisticCount({ count }) {}
-
-export function Form({ increment, count }) {
+export function Counter({ count }) {
 	const [state, optimisticIcrement] = useOptimisticState(
 		count,
 		(prev) => prev + 1,
 	);
 	return (
-		<form>
+		<form
+			action={async (formData) => {
+				optimisticIcrement();
+				await increment();
+			}}
+		>
 			<div>{state}</div>
-			<button
-				formAction={async (formData) => {
-					optimisticIcrement();
-					await increment();
-				}}
-			>
-				Increment
-				<Pending />
-			</button>
+			<Button pending="Incrementing...">Increment</Button>
 		</form>
 	);
 }
