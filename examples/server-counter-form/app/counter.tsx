@@ -9,13 +9,13 @@ export function Button({ children, pending }) {
 	return <button>{status.pending ? pending : children}</button>;
 }
 
-declare global {
-	namespace React {
-		interface FormHTMLAttributes {
-			action?: Promise<any> | string | undefined;
-		}
-	}
-}
+// declare global {
+// 	namespace React {
+// 		interface FormHTMLAttributes {
+// 			action?: Promise<any> | string | undefined;
+// 		}
+// 	}
+// }
 
 export function Counter({ count }) {
 	const [state, optimisticIcrement] = useOptimisticState(
