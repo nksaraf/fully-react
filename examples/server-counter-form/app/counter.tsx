@@ -1,7 +1,7 @@
 "use client";
 
 import { experimental_useFormStatus as useFormStatus } from "react-dom";
-import { experimental_useOptimistic as useOptimisticState } from "react";
+import { experimental_useOptimistic as useOptimistic } from "react";
 
 function Button({ children, pending }) {
 	const status = useFormStatus();
@@ -9,14 +9,11 @@ function Button({ children, pending }) {
 }
 
 export function Counter({ count, increment }) {
-	const [state, optimisticIcrement] = useOptimisticState(
-		count,
-		(prev) => prev + 1,
-	);
+	const [state, optimisticIncrement] = useOptimistic(count, (prev) => prev + 1);
 	return (
 		<form
 			action={async (formData) => {
-				optimisticIcrement();
+				optimisticIncrement();
 				await increment();
 			}}
 		>
