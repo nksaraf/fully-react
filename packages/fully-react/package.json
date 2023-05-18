@@ -20,7 +20,7 @@
       "require": "./dist/fs-router.cjs"
     },
     "./node": "./dist/node.js",
-    "./entry-server": "./dist/entry-server.js",
+    "./entry-server": "./src/entry-server.ts",
     "./webpack": "./src/server/webpack.ts",
     "./mutation": "./src/client/mutation.ts",
     "./form": "./src/client/form/index.ts",
@@ -40,10 +40,11 @@
     "./react-server": "./src/server/server-components.tsx",
     "./async-context": "./src/server/async-context.ts",
     "./react-server-streams": "./src/server/server-streams.tsx",
-    "./server/entry": "./dist/server/entry.js",
+    "./server/entry": "./src/server/entry.ts",
     "./link": "./src/client/router/link.tsx",
     "./fs": "./src/app-router/fs.ts",
-    "./app-router": "./src/app-router/client/index.ts"
+    "./app-router": "./src/app-router/client/index.ts",
+    "./cache": "./src/cache/index.ts"
   },
   "typesVersions": {
     "*": {
@@ -133,6 +134,9 @@
       ],
       "app-router": [
         "./src/app-router/client/index.ts"
+      ],
+      "cache": [
+        "./src/cache/index.ts"
       ]
     }
   },
@@ -180,21 +184,27 @@
     "vitest": "^0.29.8"
   },
   "dependencies": {
+    "@antfu/utils": "^0.7.2",
     "@hattip/adapter-node": "^0.0.33",
     "@hattip/core": "^0.0.33",
     "@hattip/router": "^0.0.33",
+    "@resvg/resvg-js": "^2.4.1",
     "@vercel/nft": "^0.22.6",
     "@vitejs/plugin-react": "^3.1.0",
     "acorn-loose": "^8.3.0",
     "cac": "^6.7.14",
     "execa": "^7.1.1",
+    "fast-glob": "^3.2.12",
     "history": "^5.3.0",
     "import-meta-resolve": "^2.2.2",
+    "pathe": "^1.1.0",
     "picocolors": "^1.0.0",
     "react-error-boundary": "^4.0.3",
     "resolve.exports": "^2.0.0",
     "sade": "^1.8.1",
+    "satori": "^0.8.1",
     "sirv": "^2.0.2",
+    "superjson": "^1.12.3",
     "supports-color": "^9.3.1",
     "tiny-invariant": "^1.3.1",
     "tiny-warning": "^1.0.3",

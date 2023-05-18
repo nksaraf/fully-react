@@ -1,12 +1,7 @@
-import { Env } from "../server/env";
 import { ReactRefreshScript } from "../server/dev/react-refresh-script";
-import { cache, use } from "react";
+import { use } from "react";
 
 type AssetDesc = string | { type: "style"; style: string; src?: string };
-
-declare global {
-	var findAssets: () => Promise<AssetDesc[]>;
-}
 
 const linkProps = [
 	["js", { rel: "modulepreload", crossOrigin: "" }],
@@ -67,23 +62,20 @@ export const Style = ({ style, src }: { style: string; src?: string }) => {
 };
 
 export function Assets({ assets = [] }: { assets?: AssetDesc[] }) {
-	if (import.meta.env.SSR) {
-		return (
-			<>
-				{import.meta.env.ROUTER_MODE === "server" ? (
-					<ServerAssets />
-				) : (
-					<ClientAssets />
-				)}
-				{import.meta.env.DEV ? <ReactRefreshScript /> : null}
-			</>
-		);
-	}
-	return null;
+	return (
+		<>
+			{import.meta.env.ROUTER_MODE === "server" ? (
+				<ServerAssets />
+			) : import.meta.env.SSR ? (
+				<ClientAssets />
+			) : null}
+			{import.meta.env.DEV ? <ReactRefreshScript /> : null}
+		</>
+	);
 }
 
 export async function ServerAssets() {
-	const allAssets = [...new Set([...(await env.findAssets())]).values()];
+	const allAssets = [...new Set([...(await context.findAssets(""))]).values()];
 	return (
 		<>
 			{allAssets.map((asset, index) => {
@@ -98,7 +90,7 @@ export async function ServerAssets() {
 }
 
 const findAssets = async () => {
-	return [...new Set([...(await env.findAssets())]).values()];
+	return [...new Set([...(await context.findAssets(""))]).values()];
 };
 
 export function ClientAssets() {

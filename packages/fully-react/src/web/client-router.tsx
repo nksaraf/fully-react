@@ -1,12 +1,19 @@
 import FSRouter from "../app-router/fs";
+import { createRouter } from "../app-router/client/router/app-router-client";
+import routeManifest from "react:route-manifest";
+import { ClientContext } from "./context";
 
-export function Router() {
+const context = new ClientContext();
+const Router = createRouter(context.pageRoutes());
+
+const url = new URL(window.location.href);
+export function AppRouter() {
 	return (
-		<FSRouter
-			url={typeof window !== "undefined" ? window.location.href : ""}
+		<Router
+			url={url.href}
 			headers={{}}
 			params={{}}
-			searchParams={{}}
+			searchParams={Object.fromEntries(url.searchParams.entries())}
 		/>
 	);
 }

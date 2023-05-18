@@ -5,6 +5,13 @@ declare global {
 	var __vite_dev_server__: ViteDevServer | undefined;
 }
 
+class ViteServer {
+	$internal: ViteDevServer;
+	constructor(server: ViteDevServer) {
+		this.$internal = server;
+	}
+}
+
 export function exposeDevServer(): Plugin {
 	let dev = false;
 

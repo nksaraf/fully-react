@@ -1,24 +1,24 @@
 "use client";
+import { useAction } from "./useAction";
 
-import { experimental_useFormStatus as useFormStatus } from "react-dom";
-import { experimental_useOptimistic as useOptimistic } from "react";
-
-function Button({ children, pending }) {
-	const status = useFormStatus();
-	return <button>{status.pending ? pending : children}</button>;
-}
-
-export function Counter({ count, increment }) {
-	const [state, optimisticIncrement] = useOptimistic(count, (prev) => prev + 1);
+export function Counter({
+	count,
+	increment,
+}: {
+	count: number;
+	increment: () => Promise<void>;
+}) {
+	const [optimisticCount, CounterForm] = useAction(
+		increment,
+		count,
+		(prev) => prev + 1,
+	);
 	return (
-		<form
-			action={async (formData) => {
-				optimisticIncrement();
-				await increment();
-			}}
-		>
-			<div>{state}</div>
-			<Button pending="Incrementing...">Increment</Button>
-		</form>
+		<CounterForm>
+			<div>{optimisticCount}</div>
+			<button>
+				<CounterForm.Pending pending="Incrementing..." idle="Increment" />
+			</button>
+		</CounterForm>
 	);
 }

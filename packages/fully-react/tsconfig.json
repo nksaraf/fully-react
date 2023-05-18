@@ -2,6 +2,8 @@
 	"compilerOptions": {
 		"target": "es2022",
 		"module": "ESNext",
+		"allowJs": true,
+		"checkJs": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
@@ -10,6 +12,13 @@
 		"skipLibCheck": true,
 		"moduleResolution": "Node",
 		"resolveJsonModule": true,
-		"jsx": "react-jsx"
-	}
+		"jsx": "react-jsx",
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"paths": {
+			"types": ["./types/internal.d.ts"]
+		}
+	},
+	"include": ["src/**/*", "types/**/*"],
+	"exclude": ["node_modules", "build", "dist"]
 }

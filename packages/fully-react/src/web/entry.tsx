@@ -48,6 +48,16 @@ export function loadModule(id: string) {
 	}
 }
 
+const onDocumentLoad = (fn: () => void) => {
+	if (document.readyState !== "loading") {
+		setTimeout(fn);
+	} else {
+		document.addEventListener("DOMContentLoaded", () => {
+			fn();
+		});
+	}
+};
+
 export function mount(
 	element: JSX.Element,
 	{
@@ -82,11 +92,13 @@ export function mount(
 	if (window.document.documentElement.id === "__error__") {
 		createRoot(document as unknown as HTMLElement).render(element);
 	} else {
-		startTransition(() => {
-			hydrateRoot(document, element, {
-				...hydrationOptions,
-				onRecoverableError,
-			});
-		});
+		onDocumentLoad(() =>
+			startTransition(() => {
+				hydrateRoot(document, element, {
+					...hydrationOptions,
+					onRecoverableError,
+				});
+			}),
+		);
 	}
 }

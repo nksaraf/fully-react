@@ -7,18 +7,25 @@ import { join } from "node:path";
 // import { moduleResolve } from "import-meta-resolve";
 import { parse } from "acorn-loose";
 
-export function reactServerComponents(): Plugin {
+
+class ViteAppServer {}
+
+export function serverComponents({
+	clientReference = "react.client.reference",
+	serverReference = "react.server.reference",
+} = {}): Plugin {
 	let root: string;
 	let isBuild = false;
+	let viteServer: ViteAppServer;
 	const clientModules = new Set();
 	const serverModules = new Set();
 	return {
-		name: "react-server-components",
+		name: "server-components",
 
 		enforce: "pre",
 
 		config() {
-			if (process.env.RSC_WORKER) {
+			if (process.env.COMPONENT_SERVER_WORKER) {
 				return {
 					serverComponents: {
 						serverModules,
@@ -31,12 +38,13 @@ export function reactServerComponents(): Plugin {
 		},
 
 		configResolved(config) {
+			viteServer = config.appServer;
 			root = config.root;
 			isBuild = config.command === "build";
 		},
 
 		transform(code, id, options) {
-			if (!options?.ssr || !process.env.RSC_WORKER) return;
+			if (!options?.ssr || !process.env.COMPONENT_SERVER_WORKER) return;
 
 			// if (isBuild) {
 			// 	// Emit the non-rsc version of the module as a chunk
@@ -108,8 +116,7 @@ export function reactServerComponents(): Plugin {
 				clientModules.add(id);
 				await parseExportNamesInto(ast, names, id);
 
-				let newSrc =
-					"const CLIENT_REFERENCE = Symbol.for('react.client.reference');\n";
+				let newSrc = `const CLIENT_REFERENCE = Symbol.for('${clientReference}');\n`;
 				for (let i = 0; i < names.length; i++) {
 					const name = names[i];
 					if (name === "default") {
@@ -206,7 +213,7 @@ export function reactServerComponents(): Plugin {
 						newSrc += "if (typeof " + local + ' === "function") ';
 					}
 					newSrc += "Object.defineProperties(" + local + ",{";
-					newSrc += '$$typeof: {value: Symbol.for("react.server.reference")},';
+					newSrc += `$$typeof: {value: Symbol.for("${serverReference}")},`;
 					newSrc +=
 						"$$id: {value: " + JSON.stringify(id + "#" + exported) + "},";
 					newSrc += "$$bound: { value: null }";
@@ -345,7 +352,7 @@ export function reactServerComponents(): Plugin {
 			}
 		},
 		generateBundle(options) {
-			if (process.env.RSC_WORKER) {
+			if (process.env.COMPONENT_SERVER_WORKER) {
 				mkdirSync(options.dir!, { recursive: true });
 				writeFileSync(
 					join(options.dir!, "client-manifest.json"),

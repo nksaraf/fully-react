@@ -27,7 +27,7 @@ export function getServerElementStream(url: string) {
 	return stream;
 }
 
-export function ServerComponent({ url }: { url: string }) {
+export function useHMR() {
 	const router = useRouter();
 	useEffect(() => {
 		if (import.meta.hot) {
@@ -36,7 +36,9 @@ export function ServerComponent({ url }: { url: string }) {
 			});
 		}
 	}, [router]);
+}
 
+export function ServerComponent({ url }: { url: string }) {
 	return use(useServerElement(url));
 }
 

@@ -32,27 +32,23 @@ export default defineConfig([
 	// },
 	{
 		entry: {
-			"entry-standalone": "./src/winterkit/entry/entry-standalone.ts",
-			"entry-standalone-imported-sirv":
-				"./src/winterkit/entry/entry-standalone-with-sirv.ts",
 			"entry-vercel": "./src/winterkit/entry/entry-vercel.ts",
 		},
 		format: ["esm"],
 		platform: "node",
 		target: "esnext",
 		shims: false,
-		external: ["sirv", "/virtual:vavite-connect-handler"],
+		external: ["sirv", "virtual:entry-server"],
 	},
 	{
 		entry: {
-			"entry-standalone-bundled-sirv":
-				"./src/winterkit/entry/entry-standalone-with-sirv.ts",
+			"entry-node": "./src/winterkit/entry/entry-node.ts",
 		},
 		format: ["esm"],
 		platform: "node",
 		target: "esnext",
 		shims: false,
-		external: ["/virtual:vavite-connect-handler", "compression", "connect"],
+		external: ["virtual:entry-server", "compression", "connect"],
 		noExternal: ["sirv"],
 	},
 	{
@@ -64,7 +60,7 @@ export default defineConfig([
 		platform: "node",
 		target: "esnext",
 		shims: false,
-		external: ["/virtual:vavite-connect-handler"],
+		external: ["virtual:entry-server"],
 		noExternal: ["sirv", "@hattip/adapter-node"],
 	},
 	{
@@ -79,7 +75,7 @@ export default defineConfig([
 	},
 	{
 		entry: {
-			"entry-rsc.development": "./src/react-server/entry.tsx",
+			"entry-rsc.development": "./src/component-server/entry.tsx",
 		},
 		env: {
 			NODE_ENV: "development",
@@ -94,7 +90,7 @@ export default defineConfig([
 	},
 	{
 		entry: {
-			"entry-rsc.production": "./src/react-server/entry.tsx",
+			"entry-rsc.production": "./src/component-server/entry.tsx",
 		},
 		env: {
 			NODE_ENV: "production",
@@ -110,7 +106,7 @@ export default defineConfig([
 	},
 	{
 		entry: {
-			"rsc-worker": "./src/react-server/node-worker.ts",
+			"rsc-worker": "./src/component-server/node-worker.ts",
 		},
 		dts: false,
 		format: ["esm"],

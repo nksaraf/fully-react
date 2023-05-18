@@ -12,7 +12,7 @@ export interface RouterAPI {
 	) =>
 		| Thenable<ReactElement<any, string | JSXElementConstructor<any>>>
 		| Promise<any>;
-	cache: Map<string, Thenable<JSX.Element>>;
+	// cache: Map<string, Thenable<JSX.Element>>;
 	url: string;
 	enable(): void;
 	disable(): void;

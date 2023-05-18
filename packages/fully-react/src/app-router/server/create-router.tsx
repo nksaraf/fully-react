@@ -1,11 +1,6 @@
 import React from "react";
-import {
-	RouteManifest,
-	RouteMatch,
-	RouteObject,
-	convertRoutesToDataRoutes,
-	matchRoutes,
-} from "../client/router/utils";
+import { RouteMatch, RouteObject } from "../client/router/utils";
+import { matchRoutes } from "../client/router/matchRoutes";
 import Router, { LayoutRouter } from "../client/router/app-router";
 import { createLocation, createPath } from "../../fs-router/path";
 
@@ -13,7 +8,7 @@ import { Assets } from "../../shared/assets";
 import { PageProps } from "../types";
 import { StatusCode } from "./StatusCode";
 
-function renderMatches(
+export function renderMatches(
 	matches: RouteMatch[],
 	props: PageProps,
 ): React.ReactElement | null {
@@ -54,6 +49,14 @@ function DefaultErrorComponent() {
 	);
 }
 
+const createLayoutCacheRoot = () => {
+	return {
+		segment: "<root>",
+		subTree: null,
+		children: new Map(),
+	};
+};
+
 export function createRouter(
 	routes: RouteObject[],
 	{
@@ -61,21 +64,13 @@ export function createRouter(
 		notFoundComponent = DefaultErrorComponent,
 	} = {},
 ) {
-	const manifest: RouteManifest = {};
-	const dataRoutes = convertRoutesToDataRoutes(
-		routes,
-		() => false,
-		undefined,
-		manifest,
-	);
-
 	function AppRouter(props: PageProps) {
 		const basename = "/";
 		const url = new URL(props.url);
 		const location = createLocation("", createPath(url), null, "default");
-		const matches = matchRoutes(dataRoutes, location, basename);
+		const matches = matchRoutes(routes, location, basename);
 
-		const NotFound = dataRoutes[0]?.component ?? notFoundComponent;
+		const NotFound = routes[0]?.component ?? notFoundComponent;
 		const notFound = (
 			<NotFound {...props} params={{}} children={<div>404</div>} />
 		);
@@ -101,8 +96,16 @@ export function createRouter(
 		}
 
 		return (
-			<Router initialURL={location.pathname} notFound={notFound}>
+			<Router initialURL={location.pathname}>
 				{content}
+				{/* <SegmentContext.Provider
+					value={{
+						cacheNode: createLayoutCacheRoot(),
+						remainingPath: parsePath(location.pathname),
+					}}
+				>
+					{x}
+				</SegmentContext.Provider> */}
 			</Router>
 		);
 	}

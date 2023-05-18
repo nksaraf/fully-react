@@ -39,9 +39,9 @@ type RouterAction = { type: "navigate"; url: string };
 function clientReducer(state: RouterState, action: RouterAction) {
 	switch (action.type) {
 		case "navigate":
-			if (!state.cache.has(action.url)) {
-				state.cache.set(action.url, createElementFromServer(action.url));
-			}
+			// if (!state.cache.has(action.url)) {
+			// 	state.cache.set(action.url, createElementFromServer(action.url));
+			// }
 			return { ...state, url: action.url };
 		default:
 			return state;
@@ -61,11 +61,11 @@ const reducer = typeof window === "undefined" ? serverReducer : clientReducer;
 export default function Router({
 	children,
 	initialURL,
-	notFound,
-}: {
+}: // notFound,
+{
 	children: React.ReactNode;
 	initialURL: string;
-	notFound?: React.ReactNode;
+	// notFound?: React.ReactNode;
 }) {
 	const existingRouter = use(routerContext);
 	const [cache] = useState(
@@ -99,10 +99,12 @@ export default function Router({
 				startTransition(() => dispatch({ type: "navigate", url }));
 			},
 			preload(url: string): React.Thenable<React.ReactElement> | Promise<any> {
-				if (!cache.has(url)) {
-					const promise = createElementFromServer(url);
-					cache.set(url, promise);
-					return promise;
+				if (import.meta.env.ROUTER_MODE === "server") {
+					if (!cache.has(url)) {
+						const promise = createElementFromServer(url);
+						cache.set(url, promise);
+						return promise;
+					}
 				}
 				return Promise.resolve();
 			},
@@ -156,9 +158,9 @@ export default function Router({
 	return (
 		<routerContext.Provider value={{ url: state.url, ...router }}>
 			<RedirectBoundary>
-				<NotFoundBoundary notFound={notFound}>
-					<LayoutRouter child={content} />
-				</NotFoundBoundary>
+				{/* <NotFoundBoundary notFound={notFound}> */}
+				<LayoutRouter child={content} />
+				{/* </NotFoundBoundary> */}
 			</RedirectBoundary>
 		</routerContext.Provider>
 	);

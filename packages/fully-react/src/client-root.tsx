@@ -1,4 +1,10 @@
 "use client";
-import fsRouter from "fully-react/fs";
+import { createRouter } from "./app-router/client/router/app-router-client";
+import { ServerContext } from "./server/ServerContext";
 
-export default fsRouter;
+function createClientRouter(context: ServerContext) {
+	const Router = createRouter(context.pageRoutes());
+	return Router;
+}
+
+export default createClientRouter(context);

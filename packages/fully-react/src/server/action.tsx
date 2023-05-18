@@ -1,10 +1,10 @@
-import type { Env } from "./env";
-import { renderToResultStream } from "../react-server/stream";
+import type { Context } from "./context";
+import { renderToResultStream } from "../component-server/stream";
 
 export async function createActionResponse(
 	action: any,
 	args: any,
-	renderOptions: Env,
+	renderOptions: Context,
 	responseInit: ResponseInit = {},
 ) {
 	return new Response(

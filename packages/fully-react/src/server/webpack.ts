@@ -1,6 +1,6 @@
 import * as logger from "../logger";
 
-import { ModuleMap } from "./env";
+import { ModuleMap } from "./context";
 
 function dynamicImport(chunk: string) {
 	return import(/* @vite-ignore */ chunk);

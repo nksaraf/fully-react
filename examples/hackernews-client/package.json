@@ -1,0 +1,30 @@
+{
+  "name": "example-server-counter",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build:server": "vite build --ssr",
+    "build:client": "vite build",
+    "build": "npm run build:server && npm run build:client",
+    "start": "node dist/server/index.js",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.12.0",
+    "@tanstack/react-query": "^4.29.1",
+    "@tanstack/react-query-devtools": "^4.27.0",
+    "@vinxi/vite-plugin-inspect": "^0.6.27",
+    "react": "0.0.0-experimental-efb381bbf-20230505",
+    "react-dom": "0.0.0-experimental-efb381bbf-20230505",
+    "react-server-dom-webpack": "0.0.0-experimental-efb381bbf-20230505"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.33",
+    "@types/react-dom": "^18.0.11",
+    "fully-react": "^0.0.2",
+    "prisma": "^4.12.0",
+    "typescript": "5.1.0-beta",
+    "vite": "^4.3"
+  }
+}

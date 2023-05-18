@@ -82,12 +82,27 @@ export function useBaseRouter() {
 	return { ...router, url } as const;
 }
 
-export function Router() {
+function BaseRouter({ children }: { children: React.ReactNode }) {
 	const router = useBaseRouter();
 
 	return (
-		<routerContext.Provider value={router}>
-			<ServerComponent url={router.url} />
-		</routerContext.Provider>
+		<routerContext.Provider value={router}>{children}</routerContext.Provider>
 	);
+}
+
+function CurrentServerComponent() {
+	const router = useBaseRouter();
+	return <ServerComponent url={router.url} />;
+}
+
+export function Router() {
+	return (
+		<BaseRouter>
+			<CurrentServerComponent />
+		</BaseRouter>
+	);
+}
+
+export function AppRouter() {
+	return <ServerComponent url={window.location.href} />;
 }

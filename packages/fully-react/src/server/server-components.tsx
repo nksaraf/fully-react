@@ -1,11 +1,10 @@
-import type { Env } from "./env";
-import type { RenderToReadableStreamOptions } from "react-dom/server.edge";
-import { renderServerComponent } from "../react-server/render";
+import type { Context } from "./context";
+import { renderServerComponent } from "../component-server/render";
 
 export async function createServerComponentResponse(
 	component: string,
 	props: any,
-	env: RenderToReadableStreamOptions & Env,
+	env: Context,
 	responseInit: ResponseInit = {},
 ) {
 	const serverElement = await renderServerComponent(component, props, env);

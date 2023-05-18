@@ -13,16 +13,20 @@
   "dependencies": {
     "@planetscale/database": "^1.7.0",
     "@prisma/client": "^4.12.0",
+    "@resvg/resvg-js": "^2.4.1",
+    "@vercel/og": "^0.5.4",
+    "node-svg2img": "^1.1.0",
     "react": "0.0.0-experimental-efb381bbf-20230505",
     "react-dom": "0.0.0-experimental-efb381bbf-20230505",
-    "react-server-dom-webpack": "0.0.0-experimental-efb381bbf-20230505"
+    "react-server-dom-webpack": "0.0.0-experimental-efb381bbf-20230505",
+    "satori": "^0.7.4"
   },
   "devDependencies": {
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
+    "fully-react": "^0.0.2",
     "prisma": "^4.12.0",
     "typescript": "5.1.0-beta",
-    "vite": "^4.3",
-    "fully-react": "^0.0.2"
+    "vite": "^4.3"
   }
 }

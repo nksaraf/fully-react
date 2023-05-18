@@ -11,3 +11,7 @@ globalThis.db =
 	});
 
 export default globalThis.db;
+
+export function execute<T>(query: string) {
+	return globalThis.db.execute(query) as unknown as Promise<{ rows: T[] }>;
+}

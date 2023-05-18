@@ -1,5 +1,5 @@
 import { createElement, lazy, useMemo } from "react";
-import type { Env } from "../server/env";
+import type { Context } from "../server/context";
 import type { RouteManifest } from "./types";
 import { RouteObject } from "./utils";
 
@@ -22,9 +22,9 @@ export function groupRoutesByParentId(manifest: RouteManifest) {
 const isServer = typeof window === "undefined";
 
 export function createNestedPageRoutes(
-	env: Env,
+	env: Context,
 	parentId = "",
-	routesByParentId = groupRoutesByParentId(env.manifests?.routesManifest || {}),
+	routesByParentId = groupRoutesByParentId(env.routeManifest || {}),
 	routerMode: string,
 ): RouteObject[] {
 	return (routesByParentId[parentId] || [])

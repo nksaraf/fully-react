@@ -1,4 +1,4 @@
-import type { RouteManifest } from "../server/env";
+import type { RouteManifest } from "../server/context";
 import type { ViteDevServer } from "vite";
 
 const viteDevServer = (

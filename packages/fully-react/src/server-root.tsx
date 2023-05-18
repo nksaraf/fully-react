@@ -1,3 +1,9 @@
-import fsRouter from "fully-react/fs";
+import { createRouter } from "./app-router/server";
+import { ServerContext } from "./server/ServerContext";
 
-export default fsRouter;
+function createServerRouter(context: ServerContext) {
+	const Router = createRouter(context.pageRoutes());
+	return Router;
+}
+
+export default createServerRouter(context);
