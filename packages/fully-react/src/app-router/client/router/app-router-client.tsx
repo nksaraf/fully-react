@@ -77,6 +77,7 @@ const createLayoutCacheRoot = () => {
 function clientReducer(state: RouterState, action: RouterAction) {
 	switch (action.type) {
 		case "navigate":
+			console.log("navigation", state, action);
 			// if (!state.cache.has(action.url)) {
 			// 	state.cache.set(action.url, createElementFromServer(action.url));
 			// }

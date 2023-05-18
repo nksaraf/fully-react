@@ -39,9 +39,10 @@ type RouterAction = { type: "navigate"; url: string };
 function clientReducer(state: RouterState, action: RouterAction) {
 	switch (action.type) {
 		case "navigate":
-			// if (!state.cache.has(action.url)) {
-			// 	state.cache.set(action.url, createElementFromServer(action.url));
-			// }
+			console.log("navigation", state, action);
+			if (!state.cache.has(action.url)) {
+				state.cache.set(action.url, createElementFromServer(action.url));
+			}
 			return { ...state, url: action.url };
 		default:
 			return state;
