@@ -1,6 +1,15 @@
 {
 	"trailingComma": "all",
 	"useTabs": true,
+	"plugins": ["@trivago/prettier-plugin-sort-imports"],
+	"importOrder": [
+		"^(fully-react/(.*)$)|^(fully-react$)",
+		"<THIRD_PARTY_MODULES>",
+		"^node:(.*)$",
+		"^[./]"
+	],
+	"importOrderSeparation": true,
+	"importOrderSortSpecifiers": true,
 	"overrides": [
 		{
 			"files": "**/*.md",

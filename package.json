@@ -11,6 +11,7 @@
     "format": "prettier --ignore-path .gitignore --ignore-unknown . '!pnpm-lock.yaml' --write"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^4.1.1",
     "prettier": "^2.8.7",
     "typescript": "5.1.0-beta"
   },
