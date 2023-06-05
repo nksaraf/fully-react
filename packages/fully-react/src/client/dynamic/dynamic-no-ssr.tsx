@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { NO_SSR_CODE as NO_SSR_CODE } from "./no-ssr-error";
+
+import { NO_SSR_CODE } from "./no-ssr-error";
 
 export function suspense() {
 	const error = new Error(NO_SSR_CODE);

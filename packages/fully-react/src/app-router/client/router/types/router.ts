@@ -1,12 +1,17 @@
 import invariant from "tiny-invariant";
 
 import {
+	RouterHistory,
+	createBrowserHistory,
+	createMemoryHistory,
+} from "./history";
+import {
 	LinkInfo,
 	LinkOptions,
 	NavigateOptions,
+	ResolveRelativePath,
 	ToOptions,
 	ValidFromPath,
-	ResolveRelativePath,
 } from "./link";
 import {
 	cleanPath,
@@ -18,34 +23,29 @@ import {
 	trimPath,
 	trimPathLeft,
 } from "./path";
+import { RouteComponent } from "./react";
 import {
-	Route,
-	AnySearchSchema,
-	AnyRoute,
-	RootRoute,
 	AnyContext,
 	AnyRootRoute,
+	AnyRoute,
+	AnySearchSchema,
+	RootRoute,
+	Route,
 } from "./route";
-import { RoutesInfo, AnyRoutesInfo, RoutesById } from "./routeInfo";
+import { AnyRoutesInfo, RoutesById, RoutesInfo } from "./routeInfo";
 import { AnyRouteMatch, RouteMatch, RouteMatchState } from "./routeMatch";
 import { defaultParseSearch, defaultStringifySearch } from "./searchParams";
 import {
-	functionalUpdate,
-	last,
 	NoInfer,
-	pick,
 	PickAsRequired,
 	Timeout,
 	Updater,
-	replaceEqualDeep,
+	functionalUpdate,
+	last,
 	partialDeepEqual,
+	pick,
+	replaceEqualDeep,
 } from "./utils";
-import {
-	createBrowserHistory,
-	createMemoryHistory,
-	RouterHistory,
-} from "./history";
-import { RouteComponent } from "./react";
 
 //
 

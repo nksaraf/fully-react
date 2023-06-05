@@ -104,17 +104,6 @@ export default defineConfig([
 		shims: false,
 		external: ["fully-react"],
 	},
-	{
-		entry: {
-			"rsc-worker": "./src/component-server/node-worker.ts",
-		},
-		dts: false,
-		format: ["esm"],
-		platform: "node",
-		target: "esnext",
-		shims: false,
-		external: ["react-server-dom-webpack", "vite", "vite-node"],
-	},
 	// {
 	// 	entry: ["./src/entry-client.tsx"],
 	// 	outDir: "./dist",

@@ -1,10 +1,22 @@
 "use client";
-import { createRouter } from "./app-router/client/router/app-router-client";
-import { ServerContext } from "./server/ServerContext";
 
-function createClientRouter(context: ServerContext) {
-	const Router = createRouter(context.pageRoutes());
+import routeManifest from "app:react-routes";
+
+import { createRouter } from "./app-router/client/router/app-router-client";
+import { createNestedPageRoutes } from "./fs-router/nested";
+
+function createClientRouter() {
+	const Router = createRouter(
+		createNestedPageRoutes(
+			{
+				routeManifest,
+			},
+			"root",
+			undefined,
+			import.meta.app.ROUTER_MODE,
+		),
+	);
 	return Router;
 }
 
-export default createClientRouter(context);
+export default createClientRouter();

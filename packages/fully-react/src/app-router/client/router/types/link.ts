@@ -1,5 +1,5 @@
 import { AnyRoutesInfo, DefaultRoutesInfo, RouteByPath } from "./routeInfo";
-import { ParsedLocation, LocationState } from "./router";
+import { LocationState, ParsedLocation } from "./router";
 import {
 	Expand,
 	NoInfer,

@@ -1,5 +1,7 @@
 "use client";
+
 import * as React from "react";
+
 import {
 	CacheContext,
 	DataCache,
@@ -7,12 +9,10 @@ import {
 } from "./rehydration-context";
 
 export const DataCacheSingleton = Symbol.for("dataCacheSingleton");
-const SuspenseCacheSingleton = Symbol.for("ApolloSuspenseCacheSingleton");
 
 declare global {
 	interface Window {
 		[DataCacheSingleton]?: DataCache;
-		// [SuspenseCacheSingleton]?: SuspenseCache;
 	}
 }
 

@@ -1,9 +1,10 @@
 import { lazy } from "react";
-import { createNestedPageRoutes } from "../fs-router/nested";
-import { createRouter as createPageRouter } from "./server/create-router";
+
+import type { AppContext } from "../app-context/context";
 import routesManifest from "../conte";
 import viteDevServer from "../dev-server";
-import type { Context } from "../server/context";
+import { createNestedPageRoutes } from "../fs-router/nested";
+import { createRouter as createPageRouter } from "./server/create-router";
 
 const isServer = typeof window === "undefined";
 const routes = createNestedPageRoutes(
@@ -21,7 +22,7 @@ const routes = createNestedPageRoutes(
 							: import(/* @vite-ignore */ importPath);
 					return lazy(importer);
 				},
-		  } as unknown as Context),
+		  } as unknown as AppContext),
 	"root",
 	undefined,
 	import.meta.env.ROUTER_MODE,

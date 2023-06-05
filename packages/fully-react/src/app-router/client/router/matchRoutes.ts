@@ -1,8 +1,9 @@
-import warning from "tiny-warning";
 import invariant from "tiny-invariant";
-import type { Location } from "../../../fs-router/path";
-import { parsePath } from "../../../fs-router/path";
-import { RouteObject, RouteMatch, Params } from "./utils";
+import warning from "tiny-warning";
+
+import type { Location } from "../../../app-context/path";
+import { parsePath } from "../../../app-context/path";
+import { Params, RouteMatch, RouteObject } from "./utils";
 
 /**
  * Matches the given routes to a location and returns the match data.

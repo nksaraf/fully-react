@@ -1,6 +1,6 @@
 import { AnyRoute, Route } from "./route";
 import { AnyRoutesInfo, DefaultRoutesInfo } from "./routeInfo";
-import { AnyRouter, isRedirect, ParsedLocation, Router } from "./router";
+import { AnyRouter, ParsedLocation, Router, isRedirect } from "./router";
 import { replaceEqualDeep } from "./utils";
 
 export interface RouteMatchState<

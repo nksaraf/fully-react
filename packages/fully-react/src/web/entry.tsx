@@ -1,9 +1,10 @@
 import React, { startTransition } from "react";
-import { createRoot, hydrateRoot, HydrationOptions } from "react-dom/client";
-import { setupWebpackEnv } from "./webpack";
+import { HydrationOptions, createRoot, hydrateRoot } from "react-dom/client";
+
+import { isNoSSRError } from "../client/dynamic/no-ssr-error";
 import { initMutation } from "../client/mutation";
 import { isNotFoundError, isRedirectError } from "../shared/navigation";
-import { isNoSSRError } from "../client/dynamic/no-ssr-error";
+import { setupWebpackEnv } from "./webpack";
 
 export * from "./root";
 

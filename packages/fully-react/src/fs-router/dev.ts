@@ -1,8 +1,8 @@
-import { Route, RouteManifest } from "./types";
+import fs from "node:fs";
 import path, { relative } from "node:path";
 
-import fs from "node:fs";
 import { stripFileExtension } from "./index";
+import { Route, RouteManifest } from "./types";
 
 export function prettyPrintRoutes(routes: any, tabs = 0) {
 	routes.forEach((r: any) => {

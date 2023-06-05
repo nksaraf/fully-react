@@ -1,4 +1,5 @@
 import React from "react";
+
 import Loadable from "./loadable";
 
 type ComponentModule<P = {}> = { default: React.ComponentType<P> };

@@ -1,13 +1,14 @@
-import type { Context } from "./context";
-import { renderServerComponent } from "../component-server/render";
+import type { AppContext } from "../app-context/context";
+import { renderServerComponent } from "../component-server/client-render";
+import { App } from "../vite-app-router/App";
 
 export async function createServerComponentResponse(
 	component: string,
 	props: any,
-	env: Context,
+	env: App,
 	responseInit: ResponseInit = {},
 ) {
-	const serverElement = await renderServerComponent(component, props, env);
+	const serverElement = await env.fetchServerComponent(component, props);
 
 	return new Response(serverElement, {
 		...responseInit,

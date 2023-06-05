@@ -1,6 +1,7 @@
-import routeManifest from "react:route-manifest";
-import { createNestedPageRoutes } from "../fs-router/nested";
+import routeManifest from "app:route-manifest";
 import { lazy } from "react";
+
+import { createNestedPageRoutes } from "../fs-router/nested";
 
 export class ClientContext {
 	routeManifest = routeManifest;

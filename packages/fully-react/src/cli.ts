@@ -1,18 +1,19 @@
-import { Manifest, ResolvedConfig, resolveConfig } from "vite";
-import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
-import { removeDir, writeJson } from "./build/fs";
-
-import { RouteManifest } from "./fs-router/types";
-import { copyDependenciesToFunction } from "./build/vercel/nft";
-import { defineFileSystemRoutes } from "./fs-router";
 import { execa } from "execa";
-import { getRedirects } from "./build/vercel/redirects";
-import { pathToFileURL } from "node:url";
 import sade from "sade";
 import supportsColor from "supports-color";
-import type { ReactEnv } from "./dev-server/fully-react";
 import invariant from "tiny-invariant";
+import { Manifest, ResolvedConfig, resolveConfig } from "vite";
+
+import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
+
+import { removeDir, writeJson } from "./build/fs";
+import { copyDependenciesToFunction } from "./build/vercel/nft";
+import { getRedirects } from "./build/vercel/redirects";
+import type { ReactEnv } from "./dev-server/fully-react";
+import { defineFileSystemRoutes } from "./fs-router";
+import { RouteManifest } from "./fs-router/types";
 
 async function adapt() {
 	const buildTempFolder = pathToFileURL(process.cwd() + "/");

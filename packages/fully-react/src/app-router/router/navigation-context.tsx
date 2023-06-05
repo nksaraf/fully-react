@@ -1,5 +1,7 @@
 "use client";
+
 import { createContext, useContext } from "react";
+
 import { ParsedPath, parsePath } from "./paths";
 
 type NavigateOptions = {

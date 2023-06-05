@@ -2,6 +2,8 @@
 
 import React, { Component } from "react";
 
+import { NOT_FOUND_ERROR_CODE } from "../../../shared/not-found";
+
 interface NotFoundBoundaryProps {
 	notFound?: React.ReactNode;
 	notFoundStyles?: React.ReactNode;
@@ -20,7 +22,7 @@ class NotFoundErrorBoundary extends Component<
 
 	static getDerivedStateFromError(error: any) {
 		console.log({ error });
-		if (error?.digest === "REACT_NOT_FOUND") {
+		if (error?.digest === NOT_FOUND_ERROR_CODE) {
 			return { notFoundTriggered: true };
 		}
 		// Re-throw if error is not for 404

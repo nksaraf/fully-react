@@ -1,0 +1,170 @@
+// import type { Plugin, UserConfig } from "vite";
+// import type { Stats } from "node:fs";
+// import type { IncomingMessage, ServerResponse } from "node:http";
+import path from "node:path";
+import url from "node:url";
+
+const dirname =
+	typeof __dirname === "undefined"
+		? url.fileURLToPath(new URL(".", import.meta.url))
+		: __dirname;
+
+// export interface VaviteConnectOptions {
+// 	/** Entry module that default exports a middleware function.
+// 	 * @default "/handler" (which resolves to handler.js, handler.ts etc.
+// 	 * in your project root)
+// 	 */
+// 	handlerEntry?: string;
+
+// 	/** Cusotm server entry the production build. */
+// 	customServerEntry?: string;
+
+// 	/** Whether to serve client-side assets in development.
+// 	 * @default false
+// 	 */
+// 	serveClientAssetsInDev?: boolean;
+
+// 	/** Whether to build a standalone server application or a middleware function.
+// 	 * @default true
+// 	 */
+// 	standalone?: boolean;
+
+// 	/** Directory where the client-side assets are located. Set to null to disable
+// 	 * static file serving in production.
+// 	 * @default null
+// 	 */
+// 	clientAssetsDir?: string | null;
+
+// 	/** Whether to bundle the sirv package or to import it. You have to install it as
+// 	 * a production dependency if this is set to false.
+// 	 * @default true
+// 	 */
+// 	bundleSirv?: boolean;
+// }
+
+/**
+ *
+ * @param {string} path
+ * @returns
+ */
+function virtual(path) {
+	return `\0` + path;
+}
+
+/**
+ *
+ * @returns {import("vite").Plugin[]}
+ */
+export default function connect() {
+	return [
+		{
+			name: "connect",
+
+			enforce: "pre",
+
+			async resolveId(id) {
+				if (id === "virtual:entry-server") {
+					return this.resolve("fully-react/entry-server");
+				} else if (id === "virtual:entry-node") {
+					return path.resolve(dirname, "entry-node.js").replace(/\\/g, "/");
+				} else if (id === "virtual:entry-vercel") {
+					return path.resolve(dirname, "entry-vercel.js").replace(/\\/g, "/");
+				}
+				if (id === "virtual:entry-dev") {
+					return virtual(id);
+				}
+			},
+
+			async load(id) {
+				if (id === virtual("virtual:entry-dev")) {
+					return `import handler from "virtual:entry-server";
+					import { createMiddleware } from "fully-react/node";
+					export default createMiddleware(handler);`;
+				}
+			},
+		},
+		{
+			name: "@vavite/connect:server",
+
+			enforce: "post",
+
+			config(config, env) {
+				/** @type {import('vite').UserConfig} */
+				const common = {
+					optimizeDeps: {
+						// This silences the "could not auto-determine entry point" warning
+						include: [],
+					},
+				};
+
+				if (env.command === "build" && config.build?.ssr) {
+					if (process.env.COMPONENT_SERVER_WORKER) {
+						return {
+							...common,
+						};
+					}
+					return {
+						...common,
+						define: {
+							CLIENT_BUILD_OUTPUT_DIR: JSON.stringify("dist/static"),
+						},
+					};
+				}
+
+				return common;
+			},
+
+			configureServer(server) {
+				function addMiddleware() {
+					server.middlewares.use(async (req, res) => {
+						/**
+						 * @param {number} status
+						 * @param {string} message
+						 */
+						function renderError(status, message) {
+							res.statusCode = status;
+							res.end(message);
+						}
+
+						// Restore the original URL (SPA middleware may have changed it)
+						req.url = req.originalUrl || req.url;
+
+						try {
+							const module = await server.ssrLoadModule("virtual:entry-dev");
+
+							await module.default(req, res, () => {
+								if (!res.writableEnded) renderError(404, "Not found");
+							});
+						} catch (err) {
+							if (err instanceof Error) {
+								server.ssrFixStacktrace(err);
+								renderError(500, err.stack || err.message);
+							} else {
+								renderError(500, "Unknown error");
+							}
+						}
+					});
+				}
+
+				return addMiddleware;
+			},
+		},
+	];
+}
+
+// type Arrayable<T> = T | T[];
+
+// export interface SirvOptions {
+// 	dev?: boolean;
+// 	etag?: boolean;
+// 	maxAge?: number;
+// 	immutable?: boolean;
+// 	single?: string | boolean;
+// 	ignores?: false | Arrayable<string | RegExp>;
+// 	extensions?: string[];
+// 	dotfiles?: boolean;
+// 	brotli?: boolean;
+// 	gzip?: boolean;
+// 	onNoMatch?: (req: IncomingMessage, res: ServerResponse) => void;
+// 	setHeaders?: (res: ServerResponse, pathname: string, stats: Stats) => void;
+// }

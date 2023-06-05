@@ -1,5 +1,6 @@
 import { FC, PropsWithChildren } from "react";
-import { RouteObject } from "../../fs-router/utils";
+
+import { RouteObject } from "../../app-context/match";
 
 export function getMatchForSegment({
 	segmentPath,

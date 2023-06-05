@@ -1,4 +1,4 @@
-import { RouteObject } from "../../fs-router/utils";
+import { RouteObject } from "../../app-context/match";
 import { RouterSegment } from "./client-router";
 import { ParsedPath, parsePath, takeSegmentMaybe } from "./paths";
 import {

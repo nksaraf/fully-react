@@ -5,6 +5,7 @@ import React, {
 	DetailedHTMLProps,
 	useCallback,
 } from "react";
+
 import { useRouter } from "./use-router";
 
 function isCtrlEvent(e: React.MouseEvent) {

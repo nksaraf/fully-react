@@ -1,8 +1,9 @@
-import sirv, { Options, RequestHandler } from "sirv";
+import { createMiddleware } from "@hattip/adapter-node";
+import { HattipHandler } from "@hattip/core";
 import compression from "compression";
 import connect from "connect";
-import { HattipHandler } from "@hattip/core";
-import { createMiddleware } from "@hattip/adapter-node";
+import sirv, { Options, RequestHandler } from "sirv";
+
 import { createServer } from "node:http";
 
 let entryServer: {

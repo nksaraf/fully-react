@@ -12,8 +12,7 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./src/index.js"
     },
     "./fs-router": {
       "import": "./dist/fs-router.js",
@@ -29,7 +28,7 @@
     "./server": "./src/server/index.ts",
     "./client": "./src/client/index.ts",
     "./dev": "./src/server/dev/index.ts",
-    "./assets": "./src/shared/assets.tsx",
+    "./assets": "./src/react/html/assets.tsx",
     "./web/entry": "./src/web/entry.ts",
     "./web/router": "./src/web/router.ts",
     "./router": "./src/client/router/index.ts",
@@ -61,7 +60,7 @@
         "./src/client/index.ts"
       ],
       "types": [
-        "./src/global.d.ts"
+        "./src/types.d.ts"
       ],
       "web/entry": [
         "./src/web/entry.tsx"
@@ -91,7 +90,7 @@
         "./src/client/refresh.ts"
       ],
       "assets": [
-        "./src/shared/assets.tsx"
+        "./src/react/html/assets.tsx"
       ],
       "webpack": [
         "./src/server/webpack.ts"
@@ -166,10 +165,12 @@
     "@cyco130/eslint-config": "^3.0.2",
     "@types/compression": "^1.7.2",
     "@types/connect": "^3.4.35",
+    "@types/debug": "^4.1.7",
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.33",
     "@types/react-dom": "^18.0.11",
     "@types/sade": "^1.7.4",
+    "bun-types": "^0.6.3",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
     "eslint": "^8.37.0",
@@ -186,13 +187,17 @@
   "dependencies": {
     "@antfu/utils": "^0.7.2",
     "@hattip/adapter-node": "^0.0.33",
+    "@hattip/compose": "^0.0.34",
     "@hattip/core": "^0.0.33",
     "@hattip/router": "^0.0.33",
+    "@milahu/debug-esm": "^4.3.5",
     "@resvg/resvg-js": "^2.4.1",
     "@vercel/nft": "^0.22.6",
     "@vitejs/plugin-react": "^3.1.0",
     "acorn-loose": "^8.3.0",
     "cac": "^6.7.14",
+    "consola": "^3.1.0",
+    "debug": "^4.3.4",
     "execa": "^7.1.1",
     "fast-glob": "^3.2.12",
     "history": "^5.3.0",
@@ -208,6 +213,7 @@
     "supports-color": "^9.3.1",
     "tiny-invariant": "^1.3.1",
     "tiny-warning": "^1.0.3",
+    "ts-invariant": "^0.10.3",
     "vite-plugin-inspect": "^0.7.18",
     "vite-tsconfig-paths": "^4.2.0"
   },

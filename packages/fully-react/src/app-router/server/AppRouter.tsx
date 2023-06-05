@@ -1,12 +1,13 @@
 import React from "react";
-import { matchRoutes } from "../client/router/matchRoutes";
+
+import { AppContext } from "../../app-context/AppContext";
+import { createLocation, createPath } from "../../app-context/path";
 import Router from "../client/router/app-router";
-import { createLocation, createPath } from "../../fs-router/path";
+import { matchRoutes } from "../client/router/matchRoutes";
 import { PageProps } from "../types";
 import { renderMatches } from "./create-router";
-import { ServerContext } from "../../server/ServerContext";
 
-function AppRouter({ context, url }: { context: ServerContext; url: string }) {
+function AppRouter({ context, url }: { context: AppContext; url: string }) {
 	const [location, matches] = context.matchRoutes(url);
 
 	const NotFound = context.notFoundComponent();

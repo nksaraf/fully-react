@@ -1,6 +1,7 @@
-import { useRouter } from "../client/router";
-import { createElementFromStream, callServer } from "../client/stream";
 import React, { Thenable, use, useEffect } from "react";
+
+import { useRouter } from "../client/router";
+import { callServer, createElementFromStream } from "../client/stream";
 
 declare global {
 	interface Window {

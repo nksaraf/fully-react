@@ -1,9 +1,10 @@
 import React, { createContext, useContext, useRef } from "react";
-import { ServerInsertedHTMLContext } from "../server/server-inserted-html";
-import { RehydrationContextValue } from "../server/types";
+
+import { ServerInsertedHTMLContext } from "../react/html/server-inserted-html";
 import { registerDataTransport, transportDataToJS } from "./dataTransport";
 import { registerLateInitializingQueue } from "./lazyQueue";
 import { ResultCacheSymbol } from "./rehydrateSymbols";
+import { RehydrationContextValue } from "./types";
 
 export class DataCache {
 	private rehydrationContext: Pick<

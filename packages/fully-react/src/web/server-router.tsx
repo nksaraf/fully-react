@@ -1,4 +1,4 @@
-import { refresh } from "../client/refresh";
+import { createBrowserHistory, createPath } from "history";
 import React, {
 	startTransition,
 	useEffect,
@@ -6,13 +6,14 @@ import React, {
 	useRef,
 	useState,
 } from "react";
-import { createPath, createBrowserHistory } from "history";
-import { mutate, addMutationListener } from "../client/mutation";
+
 import { useRerender } from "../client/hooks";
-import { ServerComponent, serverElementCache } from "./server-component";
-import { RouterAPI } from "../client/router/router-api";
+import { addMutationListener, mutate } from "../client/mutation";
+import { refresh } from "../client/refresh";
 import { routerContext } from "../client/router/context";
+import { RouterAPI } from "../client/router/router-api";
 import { createElementFromServer } from "../client/stream";
+import { ServerComponent, serverElementCache } from "./server-component";
 
 export function useBaseRouter() {
 	const [url, setURL] = useState(() => createPath(new URL(location.href)));

@@ -1,11 +1,12 @@
 import { deserialize, stringify } from "superjson";
+
+import { registerLateInitializingQueue } from "./lazyQueue";
 import {
-	SSRDataTransport,
 	RehydrationCacheSymbol,
 	ResultCacheSymbol,
+	SSRDataTransport,
 } from "./rehydrateSymbols";
-import { RehydrationCache } from "../server/types";
-import { registerLateInitializingQueue } from "./lazyQueue";
+import { RehydrationCache } from "./types";
 
 export type DataTransport<T> = Array<T> | { push(...args: T[]): void };
 

@@ -1,15 +1,17 @@
-import { A } from "fully-react/link";
 import { Assets } from "fully-react/assets";
+import { A } from "fully-react/link";
+
+import { Suspense } from "react";
+
 import { LayoutProps } from "./layout.types";
 import "./style.css";
-import { Suspense } from "react";
 
 function Nav() {
 	return (
 		<header className="header">
 			<nav className="inner">
 				<A href="/">
-					<strong>HN</strong>
+					<strong>HN!asdsd!!</strong>
 				</A>
 				<A href="/new">
 					<strong>New</strong>

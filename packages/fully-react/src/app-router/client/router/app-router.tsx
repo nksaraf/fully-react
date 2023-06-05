@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
-
 import { createBrowserHistory, createMemoryHistory, createPath } from "history";
+import * as React from "react";
 import {
 	startTransition,
 	use,
@@ -15,12 +14,14 @@ import {
 	useState,
 } from "react";
 
-import { NotFoundBoundary } from "./not-found-boundary";
-import { RedirectBoundary } from "./redirect-boundary";
+import { ErrorBoundary } from "../../../client/error-boundary";
 import { addMutationListener } from "../../../client/mutation";
-import { createElementFromServer } from "../../../client/stream";
 import { refresh } from "../../../client/refresh";
 import { routerContext } from "../../../client/router";
+import { createElementFromServer } from "../../../client/stream";
+import { useHMR } from "../../../web/server-component";
+import { NotFoundBoundary } from "./not-found-boundary";
+import { RedirectBoundary } from "./redirect-boundary";
 
 export function useRerender() {
 	const [_, rerender] = useState(() => 0);
@@ -158,6 +159,7 @@ export default function Router({
 
 	return (
 		<routerContext.Provider value={{ url: state.url, ...router }}>
+			<HMR />
 			<RedirectBoundary>
 				{/* <NotFoundBoundary notFound={notFound}> */}
 				<LayoutRouter child={content} />
@@ -168,6 +170,11 @@ export default function Router({
 }
 const layoutContext = React.createContext<{}>({});
 
+function HMR() {
+	useHMR();
+	return null;
+}
+
 export function LayoutRouter({
 	child,
 	segment,
@@ -176,13 +183,15 @@ export function LayoutRouter({
 	segment?: string;
 }) {
 	return (
-		<layoutContext.Provider key={segment} value={{}}>
-			<RedirectBoundary>
-				<NotFoundBoundary notFound={<div>404</div>}>
-					<InnerLayoutRouter child={child} />
-				</NotFoundBoundary>
-			</RedirectBoundary>
-		</layoutContext.Provider>
+		<ErrorBoundary fallbackRender={(e) => <pre>{e.error.message}</pre>}>
+			<layoutContext.Provider key={segment} value={{}}>
+				<RedirectBoundary>
+					<NotFoundBoundary notFound={<div>404</div>}>
+						<InnerLayoutRouter child={child} />
+					</NotFoundBoundary>
+				</RedirectBoundary>
+			</layoutContext.Provider>
+		</ErrorBoundary>
 	);
 }
 

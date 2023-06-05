@@ -1,9 +1,10 @@
 "use client";
 
-import { callServer } from "../stream";
-import { createFromReadableStream } from "react-server-dom-webpack/client.browser";
 import { useCallback } from "react";
+import { createFromReadableStream } from "react-server-dom-webpack/client.browser";
+
 import { useRouter } from "../router/use-router";
+import { callServer } from "../stream";
 
 export async function submitForm(formData: FormData) {
 	const response = await fetch("", {

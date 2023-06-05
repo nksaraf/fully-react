@@ -1,4 +1,9 @@
+import invariant from "tiny-invariant";
+
 import { ParsePathParams } from "./link";
+import { joinPaths, trimPath, trimPathRight } from "./path";
+import { AnyRoutesInfo, DefaultRoutesInfo } from "./routeInfo";
+import { RouteMatch } from "./routeMatch";
 import { AnyRouter, Router } from "./router";
 import {
 	IsAny,
@@ -7,10 +12,6 @@ import {
 	PickUnsafe,
 	UnionToIntersection,
 } from "./utils";
-import invariant from "tiny-invariant";
-import { joinPaths, trimPath, trimPathRight } from "./path";
-import { AnyRoutesInfo, DefaultRoutesInfo } from "./routeInfo";
-import { RouteMatch } from "./routeMatch";
 
 export const rootRouteId = "__root__" as const;
 export type RootRouteId = typeof rootRouteId;

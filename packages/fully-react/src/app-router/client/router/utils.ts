@@ -4,10 +4,8 @@
  * Copyright (c) React Training 2015-2019
  * Copyright (c) Remix Software 2020-2022
  */
-
-import type { Path, To } from "../../../fs-router/path";
-
-import { parsePath } from "../../../fs-router/path";
+import type { Path, To } from "../../../app-context/path";
+import { parsePath } from "../../../app-context/path";
 
 /**
  * @private

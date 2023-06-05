@@ -1,18 +1,32 @@
-import type { Context } from "./context";
-import { createRequestRouter } from "./handler";
-import { DevServerContext, ProdServerContext } from "./ServerContext";
+import { HattipHandler } from "@hattip/core";
 
-const Context = import.meta.env.PROD ? ProdServerContext : DevServerContext;
+import { getApp } from "../app";
+// import { AppDevContext } from "../app-context/AppDevContext";
+// import { AppProdContext } from "../app-context/AppProdContext";
+// import viteDevServer from "../dev-server";
+import { FetchEvent } from "./event";
 
-type Handler = ({
-	request,
-}: {
-	request: Request;
-}) => Promise<Response> | Response;
+// const createAppContext = import.meta.env.PROD
+// 	? () => new AppProdContext()
+// 	: () => new AppDevContext(viteDevServer, "app");
 
 export function createHandler() {
-	const context = new Context();
-	context.setupWebpackEnv();
-	globalThis.context = context;
-	return createRequestRouter(context).buildHandler() as Handler;
+	const app = getApp();
+	const handler: HattipHandler = ({
+		request,
+		ip,
+		passThrough,
+		waitUntil,
+		platform,
+	}) =>
+		app.webServer.handleEvent(
+			new FetchEvent(request, {
+				ip,
+				passThrough,
+				waitUntil,
+				platform,
+			}),
+		);
+
+	return handler;
 }

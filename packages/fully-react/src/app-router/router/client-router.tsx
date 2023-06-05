@@ -3,20 +3,20 @@
 import {
 	PropsWithChildren,
 	ReactNode,
+	createContext, // @ts-ignore  TODO: enable react@next types
+	use,
+	useContext,
 	useEffect,
 	useMemo,
+	useReducer,
 	useState,
 	useTransition,
-	// @ts-ignore  TODO: enable react@next types
-	use,
-	createContext,
-	useContext,
-	useReducer,
 } from "react";
 // import { FLIGHT_REQUEST_HEADER, ROUTER_STATE_HEADER } from "../shared";
 import { createFromFetch } from "react-server-dom-webpack/client.browser";
-import { ParsedPath, parsePath, takeSegment } from "./paths";
+
 import { GlobalRouterContext } from "./navigation-context";
+import { ParsedPath, parsePath, takeSegment } from "./paths";
 
 export const getPathFromDOMState = () => {
 	// TODO: searchparams etc?

@@ -1,4 +1,4 @@
-const NOT_FOUND_ERROR_CODE = "REACT_NOT_FOUND";
+export const NOT_FOUND_ERROR_CODE = "NOT_FOUND";
 
 type NotFoundError = Error & { digest: typeof NOT_FOUND_ERROR_CODE };
 

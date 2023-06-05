@@ -1,29 +1,30 @@
+import invariant from "tiny-invariant";
 import {
-	createLogger,
-	ViteDevServer,
+	ConfigEnv,
 	type Plugin,
 	ResolvedConfig,
-	ConfigEnv,
 	UserConfig,
+	ViteDevServer,
+	createLogger,
 } from "vite";
-import path, { dirname, join } from "node:path";
+
 import { cpSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import path, { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import { setApp } from "../app";
+import { AppContext, RouteManifest } from "../app-context/context";
+// import { AppOptions, DevApp } from "../app/App";
+import { ComponentServerMain } from "../component-server/node-worker-client";
 import { defineFileSystemRoutes } from "../fs-router";
 import { generateTypes, prettyPrintRoutes } from "../fs-router/dev";
 import { createNestedPageRoutes } from "../fs-router/nested";
-import { Context, RouteManifest } from "../server/context";
-import {
-	ComponentServerWorker,
-	createComponentServerWorker as createComponentServerWorker,
-} from "../component-server/node-worker-client";
-import invariant from "tiny-invariant";
-import { fileURLToPath } from "node:url";
 import { ConfigPageRoute } from "../fs-router/types";
-import assert from "node:assert";
+import { AppOptions, DevApp } from "../vite-app-router/App";
 
 export const logger = createLogger("info", {});
 
-const findAny = (
+export const findAny = (
 	path: string,
 	name: string,
 	exts = [".js", ".ts", ".jsx", ".tsx", ".mjs", ".mts"],
@@ -38,309 +39,6 @@ const findAny = (
 };
 
 export const _dirname = dirname(fileURLToPath(import.meta.url));
-
-class BundlerEnv {
-	#serverModules: Set<unknown>;
-	#clientModules: Set<unknown>;
-	#clientDeps: {};
-	#userConfig: {};
-	#configEnv: {};
-	#reactServerWorker: ComponentServerWorker | null;
-	#vite: ViteDevServer | null;
-	constructor() {
-		this.#serverModules = new Set();
-		this.#clientModules = new Set();
-		this.#clientDeps = {};
-
-		this.#userConfig = {};
-		this.#configEnv = {};
-		this.#reactServerWorker = null;
-		this.#vite = null;
-	}
-
-	get reactServerWorker() {
-		assert(this.#reactServerWorker, "React server worker not initialized");
-		return this.#reactServerWorker;
-	}
-
-	set reactServerWorker(worker) {
-		this.#reactServerWorker = worker;
-	}
-
-	bootstrap(config, env) {
-		this.userConfig = config;
-		this.configEnv = env;
-	}
-
-	async configureDevServer(server) {
-		server.routesManifest = this.routesManifest;
-		if (!this.isReactServerWorker) {
-			this.reactServerWorker = await createComponentServerWorker("", () => {
-				server.ws.send("reload-rsc", { msg: "hello" });
-			});
-			server.rscWorker = this.reactServerWorker;
-
-			process.on("beforeExit", () => {
-				this.close();
-			});
-		}
-	}
-
-	close() {
-		if (this.reactServerWorker) {
-			this.reactServerWorker.close();
-		}
-	}
-
-	configResolved(config) {
-		this.vite = config;
-		if (this.isReactServerBuild && config.serverComponents) {
-			this._serverModules = config.serverComponents.serverModules;
-			this._clientModules = config.serverComponents.clientModules;
-		}
-	}
-
-	clientModuleForServer(src) {
-		return Object.entries(this._clientDeps)
-			.filter(([k, v]) => v.includes(src))
-			.map(([k, v]) => k);
-	}
-
-	generateRouteTypes() {
-		const env = {
-			manifests: {
-				routesManifest: this.routesManifest,
-			},
-			lazyComponent() {
-				return null;
-			},
-		};
-		const routes = createNestedPageRoutes(
-			env,
-			"root",
-			undefined,
-			this.routerMode,
-		);
-
-		prettyPrintRoutes(routes, 2);
-
-		generateTypes(
-			routes,
-			this.absoluteAppRoot,
-			this.typescriptAppRoot,
-			env.manifests.routesManifest,
-		);
-	}
-
-	get root() {
-		return this.userConfig.root ?? process.cwd();
-	}
-
-	get routerMode() {
-		return this.router.mode;
-	}
-
-	get isClientRouting() {
-		return this.routerMode === "client";
-	}
-
-	get isServerRouting() {
-		return this.routerMode === "server";
-	}
-
-	get isServerBuild() {
-		return this.configEnv.ssrBuild ?? false;
-	}
-
-	get isReactServerBuild() {
-		return this.isReactServerWorker && this.isServerBuild;
-	}
-
-	get isAppServerBuild() {
-		return !this.isReactServerWorker && this.isServerBuild;
-	}
-
-	get isClientBuild() {
-		return this.configEnv.command === "build" && !this.isServerBuild;
-	}
-
-	get clientOutDir() {
-		return join("dist", "static");
-	}
-
-	get appServerOutDir() {
-		return join("dist", "server");
-	}
-
-	get reactServerOutDir() {
-		return join("dist", "react-server");
-	}
-
-	get routesDir() {
-		return ".";
-	}
-
-	get appRoot() {
-		return "app";
-	}
-
-	get appRootEntry() {
-		return "root.tsx";
-	}
-
-	get typescriptAppRoot() {
-		return ".vite/app";
-	}
-
-	get fullyReactPkgDir() {
-		return join(_dirname, "..");
-	}
-
-	get isReactServerWorker() {
-		return Boolean(process.env.COMPONENT_SERVER_WORKER?.length);
-	}
-
-	get needsReactServer() {
-		return this.isServerRouting;
-	}
-
-	get appServerEntry() {
-		return "";
-	}
-
-	get routesManifest() {
-		if (existsSync(this.absoluteRoutesDir)) {
-			// generate route manifest and types
-			return defineFileSystemRoutes(this.absoluteRoutesDir);
-		}
-		return {};
-	}
-
-	get pageRoutes() {
-		return Object.fromEntries(
-			Object.entries(this.routesManifest).filter(([k, v]) => {
-				return v.type === "page";
-			}),
-		);
-	}
-
-	get absoluteAppRoot() {
-		return join(this.root, this.appRoot);
-	}
-
-	get absoluteClientOutDir() {
-		return join(this.root, this.clientOutDir);
-	}
-
-	get absoluteServerOutDir() {
-		return join(this.root, this.appServerOutDir);
-	}
-
-	get absoluteReactServerOutDir() {
-		return join(this.root, this.reactServerOutDir);
-	}
-
-	get absoluteRoutesDir() {
-		return join(this.root, this.appRoot, this.routesDir);
-	}
-
-	get absoluteTypescriptAppRoot() {
-		return this.absoluteAppRoot.replace(/\/app$/, this.typescriptAppRoot);
-	}
-
-	get absoluteAppRootEntry() {
-		return (
-			findAny(this.absoluteAppRoot, "root") ??
-			join(this.fullyReactPkgDir, "src", "root.tsx")
-		);
-	}
-
-	get clientModuleIds() {
-		return Array.from(this.clientModules.values());
-	}
-
-	set clientDeps(v) {
-		this._clientDeps = v;
-	}
-
-	get clientEntry() {
-		return (
-			clientEntry ??
-			findAny(this.absoluteAppRoot, "entry-client") ??
-			join(this.fullyReactPkgDir, "src", "entry-client.tsx")
-		);
-	}
-
-	get reactServerEntry() {
-		return (
-			rscEntry ??
-			findAny(this.absoluteAppRoot, "entry-rsc") ??
-			join(this.fullyReactPkgDir, "dist", "entry-rsc.production.js")
-		);
-	}
-
-	get clientDeps() {
-		if (this._clientDeps) {
-			return this._clientDeps;
-		}
-		if (existsSync(join(this.absoluteReactServerOutDir, "client-deps.json"))) {
-			this._clientDeps = JSON.parse(
-				readFileSync(join(this.absoluteReactServerOutDir, "client-deps.json"), {
-					encoding: "utf8",
-				}),
-			);
-		}
-
-		return this._clientDeps;
-	}
-
-	get clientModules() {
-		if (this._clientModules) {
-			return this._clientModules;
-		}
-		let clientModules = [];
-		if (
-			existsSync(join(this.absoluteReactServerOutDir, "client-manifest.json"))
-		) {
-			clientModules = JSON.parse(
-				readFileSync(
-					join(this.absoluteReactServerOutDir, "client-manifest.json"),
-					{
-						encoding: "utf8",
-					},
-				),
-			);
-		}
-
-		this._clientModules = new Set(clientModules);
-
-		return this._clientModules;
-	}
-
-	get serverModules() {
-		if (this._serverModules) {
-			return this._serverModules;
-		}
-
-		let serverModules = [];
-		if (
-			existsSync(join(this.absoluteReactServerOutDir, "server-manifest.json"))
-		) {
-			serverModules = JSON.parse(
-				readFileSync(
-					join(this.absoluteReactServerOutDir, "server-manifest.json"),
-					{
-						encoding: "utf8",
-					},
-				),
-			);
-		}
-
-		this._serverModules = new Set(serverModules);
-
-		return this._serverModules;
-	}
-}
 
 const createBundlerEnv = ({
 	router,
@@ -360,9 +58,7 @@ const createBundlerEnv = ({
 	return {
 		userConfig: {} as UserConfig,
 		configEnv: {} as ConfigEnv,
-		reactServerWorker: null as null | Awaited<
-			ReturnType<typeof createComponentServerWorker>
-		>,
+		reactServerWorker: null as null | ComponentServerMain,
 		vite: null as null | ResolvedConfig,
 		bootstrap(config: UserConfig, env: ConfigEnv) {
 			this.userConfig = config;
@@ -371,16 +67,17 @@ const createBundlerEnv = ({
 		async configureDevServer(
 			server: ViteDevServer & {
 				routesManifest?: RouteManifest;
-				rscWorker?: Awaited<ReturnType<typeof createComponentServerWorker>>;
+				rscWorker?: ComponentServerMain;
 			},
 		) {
 			server.routesManifest = this.routesManifest;
 			if (!this.isReactServerWorker) {
-				this.reactServerWorker = await createComponentServerWorker("", () => {
+				this.reactServerWorker = new ComponentServerMain();
+				await this.reactServerWorker.init("", () => {
 					server.ws.send("reload-rsc", { msg: "hello" });
 				});
-				server.rscWorker = this.reactServerWorker;
 
+				server.rscWorker = this.reactServerWorker;
 				process.on("beforeExit", () => {
 					this.close();
 				});
@@ -413,22 +110,22 @@ const createBundlerEnv = ({
 				lazyComponent() {
 					return null;
 				},
-			} as unknown as Context;
-			const routes = createNestedPageRoutes(
-				env,
-				"root",
-				undefined,
-				this.routerMode,
-			);
+			} as unknown as AppContext;
+			// const routes = createNestedPageRoutes(
+			// 	env,
+			// 	"root",
+			// 	undefined,
+			// 	this.routerMode,
+			// );
 
-			prettyPrintRoutes(routes, 2);
+			// prettyPrintRoutes(routes, 2);
 
-			generateTypes(
-				routes,
-				this.absoluteAppRoot,
-				this.typescriptAppRoot,
-				env.manifests!.routesManifest,
-			);
+			// generateTypes(
+			// 	routes,
+			// 	this.absoluteAppRoot,
+			// 	this.typescriptAppRoot,
+			// 	env.router!.routeManifest,
+			// );
 		},
 		get root() {
 			return this.userConfig.root ?? process.cwd();
@@ -613,6 +310,34 @@ const createBundlerEnv = ({
 
 export type ReactEnv = ReturnType<typeof createBundlerEnv>;
 
+// function createVitePlugin(app: DevApp) {
+// 	return {
+// 		enforce: "pre",
+// 		name: "fully-react",
+// 		async configureServer(
+// 			server: ViteDevServer & {
+// 				routesManifest?: RouteManifest;
+// 				rscWorker?: Awaited<ReturnType<typeof createComponentServerWorker>>;
+// 			},
+// 		) {
+// 			app.bundlerEnv.configureDevServer(server);
+// 		},
+// 		closeWatcher() {
+// 			app.bundlerEnv.close();
+// 		},
+// 		configResolved(config: ResolvedConfig) {
+// 			app.bundlerEnv.configResolved(config);
+// 		},
+// 	};
+// }
+
+export function appRouter(options: AppOptions) {
+	const app = new DevApp(options);
+	setApp(app);
+
+	return;
+}
+
 export function fullyReactBuild({
 	clientEntry,
 	rscEntry,
@@ -631,7 +356,7 @@ export function fullyReactBuild({
 		async configureServer(
 			server: ViteDevServer & {
 				routesManifest?: RouteManifest;
-				rscWorker?: Awaited<ReturnType<typeof createComponentServerWorker>>;
+				rscWorker?: ComponentServerMain;
 			},
 		) {
 			reactEnv.configureDevServer(server);

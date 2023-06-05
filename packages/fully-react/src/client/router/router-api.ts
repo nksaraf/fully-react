@@ -1,5 +1,5 @@
 import type { History } from "history";
-import type { Thenable, ReactElement, JSXElementConstructor } from "react";
+import type { JSXElementConstructor, ReactElement, Thenable } from "react";
 
 export interface RouterAPI {
 	push: (path: string, state?: any) => void;

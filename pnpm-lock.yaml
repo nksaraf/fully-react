@@ -313,6 +313,9 @@ importers:
       '@iconify/react':
         specifier: ^4.1.0
         version: 4.1.0(react@0.0.0-experimental-efb381bbf-20230505)
+      '@math.gl/web-mercator':
+        specifier: ^3.6.3
+        version: 3.6.3
       '@prisma/client':
         specifier: ^4.11.0
         version: 4.12.0(prisma@4.12.0)
@@ -892,6 +895,43 @@ importers:
         specifier: ^4.3
         version: 4.3.0(patch_hash=pzwmkiwldkldkeu74ygswc3xkm)(@types/node@18.15.11)
 
+  examples/playground:
+    dependencies:
+      '@prisma/client':
+        specifier: ^4.12.0
+        version: 4.12.0(prisma@4.12.0)
+      '@vinxi/vite-plugin-inspect':
+        specifier: ^0.6.27
+        version: 0.6.27(rollup@2.78.1)(vite@4.3.0)
+      react:
+        specifier: 0.0.0-experimental-efb381bbf-20230505
+        version: 0.0.0-experimental-efb381bbf-20230505
+      react-dom:
+        specifier: 0.0.0-experimental-efb381bbf-20230505
+        version: 0.0.0-experimental-efb381bbf-20230505(react@0.0.0-experimental-efb381bbf-20230505)
+      react-server-dom-webpack:
+        specifier: 0.0.0-experimental-efb381bbf-20230505
+        version: 0.0.0-experimental-efb381bbf-20230505(patch_hash=2x2tjef7g7xx52xigfdjhgg4qm)(react-dom@0.0.0-experimental-efb381bbf-20230505)(react@0.0.0-experimental-efb381bbf-20230505)(webpack@5.78.0)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.0.33
+        version: 18.0.33(patch_hash=n3nkju7pgzgd2scropjzt7a6qe)
+      '@types/react-dom':
+        specifier: ^18.0.11
+        version: 18.0.11(patch_hash=5dyqwrrc5cygun5qihuotyxl6e)
+      fully-react:
+        specifier: ^0.0.2
+        version: link:../../packages/fully-react
+      prisma:
+        specifier: ^4.12.0
+        version: 4.12.0
+      typescript:
+        specifier: 5.1.0-beta
+        version: 5.1.0-beta
+      vite:
+        specifier: ^4.3
+        version: 4.3.0(patch_hash=pzwmkiwldkldkeu74ygswc3xkm)(@types/node@18.15.11)
+
   examples/server-counter-form:
     dependencies:
       '@planetscale/database':
@@ -998,6 +1038,9 @@ importers:
       '@hattip/adapter-node':
         specifier: ^0.0.33
         version: 0.0.33
+      '@hattip/compose':
+        specifier: ^0.0.34
+        version: 0.0.34
       '@hattip/core':
         specifier: ^0.0.33
         version: 0.0.33
@@ -1073,6 +1116,9 @@ importers:
       tiny-warning:
         specifier: ^1.0.3
         version: 1.0.3
+      ts-invariant:
+        specifier: ^0.10.3
+        version: 0.10.3
       vite-plugin-inspect:
         specifier: ^0.7.18
         version: 0.7.18(supports-color@9.3.1)(vite@4.3.0)
@@ -1104,6 +1150,9 @@ importers:
       '@types/sade':
         specifier: ^1.7.4
         version: 1.7.4
+      bun-types:
+        specifier: ^0.6.3
+        version: 0.6.3
       compression:
         specifier: ^1.7.4
         version: 1.7.4(supports-color@9.3.1)
@@ -2396,8 +2445,18 @@ packages:
       '@hattip/core': 0.0.33
     dev: false
 
+  /@hattip/compose@0.0.34:
+    resolution: {integrity: sha512-faW5gIvyDmut3/lUWslHitH2+rrtkM9IQvBOmdTjS7r9vaADVh2t/M+MgitTzsSavfQUbP+uCbTPQ+ffrUhceA==}
+    dependencies:
+      '@hattip/core': 0.0.34
+    dev: false
+
   /@hattip/core@0.0.33:
     resolution: {integrity: sha512-/3hhN1PYMwDDSF1zqVHEHgFHhwB2YxDPBByLZFPQG6euPTODxG9/RMpZ9YJ4cYatshSAGGwSfNXUVpflMLbJTg==}
+
+  /@hattip/core@0.0.34:
+    resolution: {integrity: sha512-L9MRB5fVgW8vd2wKDbD1pIhsM4UloRCdsXn3x9us2Xp1jeynS83T3gHGLdUvPclgGvQZapwBgUkkn9paS+bjDg==}
+    dev: false
 
   /@hattip/polyfills@0.0.33:
     resolution: {integrity: sha512-8rRQv/4F1xDionmk+T42lQ3tq6tQ4/+NoYaciKx0eg0C9KL1+of5BHGDkZA7XpymeoTZXsdY1hmWusX5w/8lTg==}
@@ -7284,6 +7343,10 @@ packages:
     dependencies:
       node-gyp-build: 4.6.0
     dev: false
+
+  /bun-types@0.6.3:
+    resolution: {integrity: sha512-Un7zCCeM8bFbgJtbdPdjAKCrcnwKYDYdzeO5ge9A3Q21ts+pGCzUV6Bkl+ZWkUkwv7qzKVXWikHe6c6zDl31vQ==}
+    dev: true
 
   /bundle-require@4.0.1(esbuild@0.17.15):
     resolution: {integrity: sha512-9NQkRHlNdNpDBGmLpngF3EFDcwodhMUuLz9PaWYciVcQF9SE4LFjM2DB/xV1Li5JiuDMv7ZUWuC3rGbqR0MAXQ==}
@@ -14011,6 +14074,13 @@ packages:
 
   /ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
+
+  /ts-invariant@0.10.3:
+    resolution: {integrity: sha512-uivwYcQaxAucv1CzRp2n/QdYPo4ILf9VXgH19zEIjFx2EJufV16P0JtJVpYHy89DItG6Kwj2oIUjrcK5au+4tQ==}
+    engines: {node: '>=8'}
+    dependencies:
+      tslib: 2.5.0
+    dev: false
 
   /tsconfck@2.1.1(typescript@5.0.3):
     resolution: {integrity: sha512-ZPCkJBKASZBmBUNqGHmRhdhM8pJYDdOXp4nRgj/O0JwUwsMq50lCDRQP/M5GBNAA0elPrq4gAeu4dkaVCuKWww==}

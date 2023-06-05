@@ -2,6 +2,7 @@
 
 import { createBrowserHistory, createMemoryHistory, createPath } from "history";
 import React, {
+	lazy,
 	startTransition,
 	use,
 	useCallback,
@@ -13,18 +14,16 @@ import React, {
 	useState,
 } from "react";
 
-import { NotFoundBoundary } from "./not-found-boundary";
-import { RedirectBoundary } from "./redirect-boundary";
+import { createLocation } from "../../../app-context/path";
 import { addMutationListener } from "../../../client/mutation";
 import { refresh } from "../../../client/refresh";
 import { routerContext } from "../../../client/router";
-
-import { RouteMatch, RouteObject } from "../../client/router/utils";
+import { Assets } from "../../../react/html/assets";
 import { matchRoutes } from "../../client/router/matchRoutes";
-
-import { Assets } from "../../../shared/assets";
+import { RouteMatch, RouteObject } from "../../client/router/utils";
 import { PageProps } from "../../types";
-import { createLocation } from "../../../fs-router/path";
+import { NotFoundBoundary } from "./not-found-boundary";
+import { RedirectBoundary } from "./redirect-boundary";
 
 export function renderMatches(
 	matches: RouteMatch[],
@@ -114,6 +113,8 @@ export function createRouter(
 		const url = new URL(state.url, "http://localhost:3000");
 		const location = createLocation("", createPath(url), null, "default");
 		const matches = matchRoutes(routes, location, basename);
+
+		console.log("matches", matches, routes, location);
 
 		const NotFound = routes[0]?.component ?? notFoundComponent;
 		const notFound = (

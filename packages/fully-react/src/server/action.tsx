@@ -1,14 +1,18 @@
-import type { Context } from "./context";
-import { renderToResultStream } from "../component-server/stream";
+import { renderToReadableStream } from "react-server-dom-webpack/server.edge";
+
+import type { AppContext } from "../app-context/context";
 
 export async function createActionResponse(
 	action: any,
 	args: any,
-	renderOptions: Context,
+	renderOptions: AppContext,
 	responseInit: ResponseInit = {},
 ) {
 	return new Response(
-		renderToResultStream(await action(...args), renderOptions.clientModuleMap),
+		renderToReadableStream(
+			await action(...args),
+			renderOptions.clientModuleMap,
+		),
 		{
 			...responseInit,
 			headers: {
