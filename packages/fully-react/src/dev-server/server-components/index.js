@@ -18,6 +18,7 @@ export function serverComponents({
 } = {}) {
 	const clientModules = new Set();
 	const serverModules = new Set();
+	let isBuild;
 	return {
 		name: "server-components",
 
@@ -39,7 +40,6 @@ export function serverComponents({
 		},
 
 		configResolved(config) {
-			root = config.root;
 			isBuild = config.command === "build";
 		},
 

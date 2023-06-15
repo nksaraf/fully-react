@@ -32,7 +32,7 @@ export class DevModuleLoader extends ModuleLoader {
 			modules.filter((i) => !!i),
 		);
 
-		return [...Object.entries(styles ?? {}).map(([key, value]) => key)];
+		return styles;
 	}
 
 	/**

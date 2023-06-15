@@ -125,9 +125,7 @@ function app(config) {
 						console.log({ path, asset: searchParams.get("asset") });
 						invariant(app.bundler.viteServer, "Vite server not initialized");
 						let assets = await collectStyles(app.bundler.viteServer, [path]);
-						return `export default [${Object.keys(assets)
-							.map((a) => JSON.stringify(a))
-							.join(", ")}]`;
+						return `export default ${JSON.stringify(assets)}`;
 					}
 
 					return code.replaceAll(
@@ -143,6 +141,12 @@ function app(config) {
 					function lazyRoute(id, fn) {
 						console.log(id, fn)
 						return lazy(async () => {
+							let updateStyle, removeStyle;
+							if (typeof window !== 'undefined' && import.meta.hot) {
+								const client = await import('/@vite/client');
+								updateStyle = client.updateStyle;
+								removeStyle = client.removeStyle;
+							}
 							const { default: Component } = await fn();
 							console.log(Component)
 							const styles = await import.meta.app.moduleLoader.findAssetsForModules([id]);
@@ -150,20 +154,38 @@ function app(config) {
 
 							const Comp = forwardRef((props, ref) => {
 								useLayoutEffect(() => {
+									Object.keys(styles).forEach((style) => {
+										if (typeof window !== 'undefined' && !document.querySelector(\`style[data-vite-dev-id="${process.cwd()}\${style}"]\`)) {
+											// const link = document.createElement('style');
+											// link.setAttribute('data-vite-dev-id', \`${process.cwd()}\${style}\`);
+											// link.innerHTML = styles[style];
+											import.meta.app.debug('mounting', style);
+											// document.head.appendChild(link);
+											updateStyle(\`${process.cwd()}\${style}\`, styles[style])
+
+										}
+									})
 									return () => {
-										debugger;
-										styles.forEach((style) => {
+										Object.keys(styles).forEach((style) => {
 											// remove all the link tags with style as href
 											const links = document.querySelectorAll(\`link[href="\${style}"]\`);
-											console.log(links)
 											for (const link of links) {
 												link.remove();
 											}
+
+											// const links2 = document.querySelectorAll(\`style[data-vite-dev-id="${process.cwd()}\${style}"]\`);
+											// for (const link of links2) {
+											// 	link.remove();
+											// }
+
+											removeStyle(\`${process.cwd()}\${style}\`)
+											import.meta.app.debug('unmounting', style);
+
 										});
 									}
 								}, [])
 								return createElement(Fragment, null, createElement(Component, {...props, ref: ref }),
-								...styles.map((style) => {
+								...Object.keys(styles).map((style) => {
 									return createElement('link', { rel: "stylesheet", href: style, precedence: "default" })
 								})
 								);

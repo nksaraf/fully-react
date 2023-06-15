@@ -12,6 +12,8 @@ import { FetchEvent } from "./event";
 
 export function createHandler() {
 	const app = getApp();
+app.bundler.viteServer?.moduleGraph
+
 	const handler: HattipHandler = ({
 		request,
 		ip,
